@@ -1,0 +1,205 @@
+@page
+@model MyWebApp.Pages.AppModel
+@{
+    ViewData["Title"] = "แอปพลิเคชัน";
+}
+
+<h2>แอปพลิเคชัน</h2>
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<!-- ปุ่มกดเพื่อเปิด Modal -->
+<button class="btn btn-success mb-3 float-end" data-bs-toggle="modal" data-bs-target="#addAppModal">
+    + เพิ่มแอปพลิเคชัน
+</button>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-light">
+        <tr>
+            <th>ลำดับ</th>
+            <th>ชื่อ</th>
+            <th>สถานะ</th>
+            <th>จัดการข้อมูล</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{ int index = 1; }
+        @foreach (var app in Model.Applications)
+        {
+            <tr>
+                <td>@index</td>
+                <td>@app.ApplicationName</td>
+                <td>
+                    @if (app.Status == "ใช้งาน")
+                    {
+                        <span class="text-success">ใช้งาน</span>
+                    }
+                    else
+                    {
+                        <span class="text-danger">ไม่ได้ใช้งาน</span>
+                    }
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editAppModal"
+                            onclick="fillEditModal(@app.Id, '@app.ApplicationId', '@app.ApplicationName')">แก้ไข</button>
+                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAppModal"
+                            onclick="fillDeleteModal(@app.Id, '@app.ApplicationName')">ลบ</button>
+                </td>
+            </tr>
+            index++;
+        }
+    </tbody>
+</table>
+
+<!-- Modal: เพิ่ม -->
+<div class="modal fade" id="addAppModal" tabindex="-1" aria-labelledby="addAppModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content bg-light">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="addAppModalLabel">เพิ่มแอปพลิเคชัน</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" asp-page-handler="Create">
+        <div asp-validation-summary="All"
+       class="text-danger  mb-1 ms-4 mt-n2"
+       style="background-color: transparent; padding-left: 0; margin-bottom:1;">
+        </div>
+        <div class="modal-body">
+            <div class="mb-2">
+                <label asp-for="NewApplication.ApplicationId" class="form-label"></label>
+                <input asp-for="NewApplication.ApplicationId" class="form-control @(ViewData.ModelState[nameof(Model.NewApplication.ApplicationId)]?.Errors.Count > 0 ? "is-invalid" : "")" />
+                <span asp-validation-for="NewApplication.ApplicationId" class="invalid-feedback"></span>
+            </div>
+            <div class="mb-2">
+                <label asp-for="NewApplication.ApplicationName" class="form-label"></label>
+                <input asp-for="NewApplication.ApplicationName" class="form-control @(ViewData.ModelState[nameof(Model.NewApplication.ApplicationName)]?.Errors.Count > 0 ? "is-invalid" : "")" />
+                <span asp-validation-for="NewApplication.ApplicationName" class="invalid-feedback"></span>
+            </div>
+            <div class="mb-2">
+                <label asp-for="NewApplication.Status" class="form-label"></label>
+                <select asp-for="NewApplication.Status" class="form-select @(ViewData.ModelState[nameof(Model.NewApplication.Status)]?.Errors.Count > 0 ? "is-invalid" : "")">
+                    <option value="">-- เลือกสถานะ --</option>
+                    <option value="ใช้งาน">ใช้งาน</option>
+                    <option value="ไม่ได้ใช้งาน">ไม่ได้ใช้งาน</option>
+                </select>
+                <span asp-validation-for="NewApplication.Status" class="invalid-feedback"></span>
+            </div>
+            <div class="mb-2">
+                <label asp-for="NewApplication.Description" class="form-label"></label>
+                <textarea asp-for="NewApplication.Description" class="form-control"></textarea>
+            </div>
+            <div class="mb-2">
+                <label asp-for="NewApplication.ContactName" class="form-label"></label>
+                <input asp-for="NewApplication.ContactName" class="form-control" />
+            </div>
+            <div class="mb-2">
+                <label asp-for="NewApplication.Telephone" class="form-label"></label>
+                <input asp-for="NewApplication.Telephone" class="form-control @(ViewData.ModelState[nameof(Model.NewApplication.Telephone)]?.Errors.Count > 0 ? "is-invalid" : "")" />
+                <span asp-validation-for="NewApplication.Telephone" class="invalid-feedback"></span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-success">บันทึก</button>
+            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">ยกเลิก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: แก้ไข -->
+<div class="modal fade" id="editAppModal" tabindex="-1" aria-labelledby="editAppModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content bg-light">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="editAppModalLabel">แก้ไขแอปพลิเคชัน</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" asp-page-handler="Edit">
+        @Html.AntiForgeryToken()
+        <div class="modal-body">
+          <input type="hidden" id="Edit_Id" name="EditApplication.Id" />
+          <div class="mb-2">
+            <label class="form-label">รหัส</label>
+            <input type="text" id="Edit_ApplicationId" name="EditApplication.ApplicationId" class="form-control @(ViewData.ModelState["EditApplication.ApplicationId"]?.Errors.Count > 0 ? "is-invalid" : "")" />
+            <span asp-validation-for="EditApplication.ApplicationId" class="invalid-feedback"></span>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">ชื่อแอป</label>
+            <input type="text" id="Edit_ApplicationName" name="EditApplication.ApplicationName" class="form-control @(ViewData.ModelState["EditApplication.ApplicationName"]?.Errors.Count > 0 ? "is-invalid" : "")" />
+            <span asp-validation-for="EditApplication.ApplicationName" class="invalid-feedback"></span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-warning">บันทึก</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal: ลบ -->
+<div class="modal fade" id="deleteAppModal" tabindex="-1" aria-labelledby="deleteAppModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content bg-light">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">ยืนยันการลบ</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" asp-page-handler="Delete">
+      @Html.AntiForgeryToken()
+        <div class="modal-body">
+          <input type="hidden" id="Delete_Id" name="DeleteId" />
+          <p>คุณแน่ใจหรือไม่ว่าต้องการลบแอปพลิเคชัน: <strong id="Delete_AppName"></strong>?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-danger">ลบ</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function fillEditModal(id, appId, appName) {
+            document.getElementById("Edit_Id").value = id;
+            document.getElementById("Edit_ApplicationId").value = appId;
+            document.getElementById("Edit_ApplicationName").value = appName;
+        }
+
+        function fillDeleteModal(id, appName) {
+            document.getElementById("Delete_Id").value = id;
+            document.getElementById("Delete_AppName").innerText = appName;
+        }
+
+        // แสดง Modal กลับมาเมื่อ ModelState Invalid
+        @if (ViewData["ShowAddModal"] != null)
+        {
+            <text>
+                const modal = new bootstrap.Modal(document.getElementById('addAppModal'));
+                modal.show();
+            </text>
+        }
+
+        @if (ViewData["ShowEditModal"] != null)
+        {
+            <text>
+                const modal = new bootstrap.Modal(document.getElementById('editAppModal'));
+                modal.show();
+            </text>
+        }
+    </script>
+}
+
+
+
+
+
+
