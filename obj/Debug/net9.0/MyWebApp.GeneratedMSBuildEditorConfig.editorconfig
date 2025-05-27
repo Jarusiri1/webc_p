@@ -32,6 +32,10 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQXBwLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/Pages/App.TablePartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQXBwLlRhYmxlUGFydGlhbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/Pages/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvRXJyb3IuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -46,6 +50,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/Pages/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvUHJpdmFjeS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/Pages/Shared/_ApplicationTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvU2hhcmVkL19BcHBsaWNhdGlvblRhYmxlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/Pages/Shared/_ValidationScriptsPartial.cshtml]

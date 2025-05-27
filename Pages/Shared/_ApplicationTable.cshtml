@@ -1,0 +1,28 @@
+@* Pages/Shared/_ApplicationTable.cshtml *@
+@model IEnumerable<MyWebApp.Models.Application>
+
+@{ int index = 1; }
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>ApplicationId</th>
+      <th>ApplicationName</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach (var app in Model) {
+      <tr data-id="@app.ApplicationId">
+        <td>@app.ApplicationId</td>
+        <td>@app.ApplicationName</td>
+        <td>
+          <button class="btn btn-sm btn-primary edit-btn" data-id="@app.ApplicationId">แก้ไข</button>
+          <button class="btn btn-sm btn-danger delete-btn" data-id="@app.ApplicationId">ลบ</button>
+        </td>
+      </tr>
+      index++;
+    }
+  </tbody>
+</table>

@@ -42,10 +42,26 @@
                     }
                 </td>
                 <td>
-                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editAppModal"
-                            onclick="fillEditModal(@app.Id, '@app.ApplicationId', '@app.ApplicationName')">แก้ไข</button>
-                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAppModal"
-                            onclick="fillDeleteModal(@app.Id, '@app.ApplicationName')">ลบ</button>
+                    <button 
+                        class="btn btn-sm btn-warning edit-btn"
+                        data-id="@app.Id"
+                        data-applicationid="@app.ApplicationId"
+                        data-applicationname="@app.ApplicationName"
+                        data-status="@app.Status"
+                        data-description="@app.Description"
+                        data-contactname="@app.ContactName"
+                        data-telephone="@app.Telephone"
+                    >
+                        แก้ไข
+                    </button>
+                    <button 
+                        class="btn btn-sm btn-danger" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#deleteAppModal"
+                        onclick="fillDeleteModal(@app.Id, '@app.ApplicationName')"
+                    >
+                        ลบ
+                    </button>
                 </td>
             </tr>
             index++;
@@ -61,25 +77,30 @@
         <h5 class="modal-title fw-bold" id="addAppModalLabel">เพิ่มแอปพลิเคชัน</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form method="post" asp-page-handler="Create">
+      <form id="addForm" method="post" asp-page-handler="Create">
+        @Html.AntiForgeryToken()
         <div asp-validation-summary="All"
-       class="text-danger  mb-1 ms-4 mt-n2"
-       style="background-color: transparent; padding-left: 0; margin-bottom:1;">
+         class="text-danger mb-1 ms-4 mt-n2"
+         style="background-color: transparent; padding-left: 0; margin-bottom:1;">
         </div>
         <div class="modal-body">
+            <!-- Input fields for NewApplication -->
             <div class="mb-2">
                 <label asp-for="NewApplication.ApplicationId" class="form-label"></label>
-                <input asp-for="NewApplication.ApplicationId" class="form-control @(ViewData.ModelState[nameof(Model.NewApplication.ApplicationId)]?.Errors.Count > 0 ? "is-invalid" : "")" />
+                <input asp-for="NewApplication.ApplicationId"
+                       class="form-control @(ViewData.ModelState[nameof(Model.NewApplication.ApplicationId)]?.Errors.Count > 0 ? "is-invalid" : "")" />
                 <span asp-validation-for="NewApplication.ApplicationId" class="invalid-feedback"></span>
             </div>
             <div class="mb-2">
                 <label asp-for="NewApplication.ApplicationName" class="form-label"></label>
-                <input asp-for="NewApplication.ApplicationName" class="form-control @(ViewData.ModelState[nameof(Model.NewApplication.ApplicationName)]?.Errors.Count > 0 ? "is-invalid" : "")" />
+                <input asp-for="NewApplication.ApplicationName"
+                       class="form-control @(ViewData.ModelState[nameof(Model.NewApplication.ApplicationName)]?.Errors.Count > 0 ? "is-invalid" : "")" />
                 <span asp-validation-for="NewApplication.ApplicationName" class="invalid-feedback"></span>
             </div>
             <div class="mb-2">
                 <label asp-for="NewApplication.Status" class="form-label"></label>
-                <select asp-for="NewApplication.Status" class="form-select @(ViewData.ModelState[nameof(Model.NewApplication.Status)]?.Errors.Count > 0 ? "is-invalid" : "")">
+                <select asp-for="NewApplication.Status"
+                        class="form-select @(ViewData.ModelState[nameof(Model.NewApplication.Status)]?.Errors.Count > 0 ? "is-invalid" : "")">
                     <option value="">-- เลือกสถานะ --</option>
                     <option value="ใช้งาน">ใช้งาน</option>
                     <option value="ไม่ได้ใช้งาน">ไม่ได้ใช้งาน</option>
@@ -96,7 +117,8 @@
             </div>
             <div class="mb-2">
                 <label asp-for="NewApplication.Telephone" class="form-label"></label>
-                <input asp-for="NewApplication.Telephone" class="form-control @(ViewData.ModelState[nameof(Model.NewApplication.Telephone)]?.Errors.Count > 0 ? "is-invalid" : "")" />
+                <input asp-for="NewApplication.Telephone"
+                       class="form-control @(ViewData.ModelState[nameof(Model.NewApplication.Telephone)]?.Errors.Count > 0 ? "is-invalid" : "")" />
                 <span asp-validation-for="NewApplication.Telephone" class="invalid-feedback"></span>
             </div>
         </div>
@@ -117,30 +139,52 @@
         <h5 class="modal-title fw-bold" id="editAppModalLabel">แก้ไขแอปพลิเคชัน</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <form method="post" asp-page-handler="Edit">
+      <form id="editForm" method="post" asp-page-handler="Edit" novalidate>
         @Html.AntiForgeryToken()
         <div class="modal-body">
-          <input type="hidden" id="Edit_Id" name="EditApplication.Id" />
-          <div class="mb-2">
-            <label class="form-label">รหัส</label>
-            <input type="text" id="Edit_ApplicationId" name="EditApplication.ApplicationId" class="form-control @(ViewData.ModelState["EditApplication.ApplicationId"]?.Errors.Count > 0 ? "is-invalid" : "")" />
-            <span asp-validation-for="EditApplication.ApplicationId" class="invalid-feedback"></span>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">ชื่อแอป</label>
-            <input type="text" id="Edit_ApplicationName" name="EditApplication.ApplicationName" class="form-control @(ViewData.ModelState["EditApplication.ApplicationName"]?.Errors.Count > 0 ? "is-invalid" : "")" />
-            <span asp-validation-for="EditApplication.ApplicationName" class="invalid-feedback"></span>
-          </div>
+            <!-- Hidden for Id only -->
+            <input type="hidden" asp-for="EditApplication.Id" id="Edit_Id" />
+            <div class="mb-2">
+                <label asp-for="EditApplication.ApplicationId" class="form-label"></label>
+                <input asp-for="EditApplication.ApplicationId" id="Edit_ApplicationId" class="form-control" />
+                <span asp-validation-for="EditApplication.ApplicationId" class="invalid-feedback"></span>
+            </div>
+            <div class="mb-2">
+                <label asp-for="EditApplication.ApplicationName" class="form-label"></label>
+                <input asp-for="EditApplication.ApplicationName" id="Edit_ApplicationName" class="form-control" />
+                <span asp-validation-for="EditApplication.ApplicationName" class="invalid-feedback"></span>
+            </div>
+            <div class="mb-2">
+                <label asp-for="EditApplication.Status" class="form-label"></label>
+                <select asp-for="EditApplication.Status" id="Edit_Status" class="form-select">
+                    <option value="">-- เลือกสถานะ --</option>
+                    <option value="ใช้งาน">ใช้งาน</option>
+                    <option value="ไม่ได้ใช้งาน">ไม่ได้ใช้งาน</option>
+                </select>
+                <span asp-validation-for="EditApplication.Status" class="invalid-feedback"></span>
+            </div>
+            <div class="mb-2">
+                <label asp-for="EditApplication.Description" class="form-label"></label>
+                <textarea asp-for="EditApplication.Description" id="Edit_Description" class="form-control"></textarea>
+            </div>
+            <div class="mb-2">
+                <label asp-for="EditApplication.ContactName" class="form-label"></label>
+                <input asp-for="EditApplication.ContactName" id="Edit_ContactName" class="form-control" />
+            </div>
+            <div class="mb-2">
+                <label asp-for="EditApplication.Telephone" class="form-label"></label>
+                <input asp-for="EditApplication.Telephone" id="Edit_Telephone" class="form-control" />
+                <span asp-validation-for="EditApplication.Telephone" class="invalid-feedback"></span>
+            </div>
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-warning">บันทึก</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+            <button type="submit" class="btn btn-warning">บันทึก</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
         </div>
       </form>
     </div>
   </div>
 </div>
-
 
 <!-- Modal: ลบ -->
 <div class="modal fade" id="deleteAppModal" tabindex="-1" aria-labelledby="deleteAppModalLabel" aria-hidden="true">
@@ -150,56 +194,114 @@
         <h5 class="modal-title fw-bold">ยืนยันการลบ</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <form method="post" asp-page-handler="Delete">
-      @Html.AntiForgeryToken()
+      <form id="deleteForm" method="post" asp-page-handler="Delete">
+        @Html.AntiForgeryToken()
         <div class="modal-body">
-          <input type="hidden" id="Delete_Id" name="DeleteId" />
-          <p>คุณแน่ใจหรือไม่ว่าต้องการลบแอปพลิเคชัน: <strong id="Delete_AppName"></strong>?</p>
+            <input type="hidden" asp-for="DeleteId" />
+            <p>คุณแน่ใจหรือไม่ว่าต้องการลบ: <strong id="Delete_AppName"></strong>?</p>
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-danger">ลบ</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+            <button type="submit" class="btn btn-danger">ลบ</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
         </div>
       </form>
     </div>
   </div>
 </div>
-
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-    <script>
-        function fillEditModal(id, appId, appName) {
-            document.getElementById("Edit_Id").value = id;
-            document.getElementById("Edit_ApplicationId").value = appId;
-            document.getElementById("Edit_ApplicationName").value = appName;
-        }
+  <script>
+    // สร้างฟังก์ชัน delete ให้เป็น global
+    function fillDeleteModal(id, appName) {
+      console.log("fillDeleteModal called with", id, appName);
+      $('#Delete_AppName').text(appName);
+      $('#DeleteId').val(id);
+      new bootstrap.Modal($('#deleteAppModal')).show();
+    }
+    window.fillDeleteModal = fillDeleteModal;
 
-        function fillDeleteModal(id, appName) {
-            document.getElementById("Delete_Id").value = id;
-            document.getElementById("Delete_AppName").innerText = appName;
-        }
+    $(function() {
+      const addModal  = new bootstrap.Modal($('#addAppModal')[0]);
+      const editModal = new bootstrap.Modal($('#editAppModal')[0]);
 
-        // แสดง Modal กลับมาเมื่อ ModelState Invalid
-        @if (ViewData["ShowAddModal"] != null)
-        {
-            <text>
-                const modal = new bootstrap.Modal(document.getElementById('addAppModal'));
-                modal.show();
-            </text>
-        }
+      // Add (Create)
+      $('#addForm').on('submit', function(e) {
+        e.preventDefault();
+        console.log("Submitting addForm:", $(this).serialize());
+        $.post('@Url.Page("App","Create")', $(this).serialize())
+          .done(() => {
+            console.log("Create success");
+            addModal.hide();
+            window.location.reload();
+          })
+          .fail(xhr => {
+            console.error("Create error:", xhr.responseText);
+            alert('Error: ' + xhr.responseText);
+          });
+      });
 
-        @if (ViewData["ShowEditModal"] != null)
-        {
-            <text>
-                const modal = new bootstrap.Modal(document.getElementById('editAppModal'));
-                modal.show();
-            </text>
-        }
-    </script>
+      // Click edit button
+      $(document).on('click', '.edit-btn', function() {
+        const btn = $(this);
+        $('#Edit_Id').val(btn.data('id'));
+        $('#Edit_ApplicationId').val(btn.data('applicationid'));
+        $('#Edit_ApplicationName').val(btn.data('applicationname'));
+        $('#Edit_Status').val(btn.data('status'));
+        $('#Edit_Description').val(btn.data('description'));
+        $('#Edit_ContactName').val(btn.data('contactname'));
+        $('#Edit_Telephone').val(btn.data('telephone'));
+        editModal.show();
+      });
+
+      // override submit ของ editForm
+      $('#editForm').on('submit', function(e) {
+        e.preventDefault();
+
+        // ดูใน console ก่อนว่ามี field ไหนบ้าง
+        const data = $(this).serialize();
+        console.log(">> editForm data:", data);
+
+        // เอา URL จาก action attribute ของฟอร์มมาใช้
+        const url = $(this).attr('action');
+        console.log(">> editForm action:", url);
+
+        $.post(url, data)
+          .done(() => {
+            console.log("Edit success");
+            editModal.hide();
+            //window.location.reload();
+          })
+          .fail(xhr => {
+            console.error("Edit error:", xhr.status, xhr.responseText);
+            // ถ้ามี validation error Razor จะ return Page() (status 200) พร้อม HTML
+            // แต่ .done() จะจับไว้ก่อน reload เลยมองไม่เห็น error
+            // จึงแนะนำให้ alert ทั้งหมดกลับมา:
+            alert("Error: " + xhr.responseText || "Unknown error");
+          });
+      });
+
+      // Submit delete form
+      $('#deleteForm').on('submit', function(e) {
+        e.preventDefault();
+        console.log("Submitting deleteForm:", $(this).serialize());
+        $.post($(this).attr('action'), $(this).serialize())
+          .done(() => {
+            console.log("Delete success");
+            $('#deleteAppModal').modal('hide');
+            window.location.reload();
+          })
+          .fail(xhr => {
+            console.error("Delete error:", xhr.responseText);
+            alert('Error: ' + xhr.responseText);
+          });
+      });
+
+      // Auto-open modals on validation error
+      @if (ViewData["ShowAddModal"] != null) {
+        <text>console.log("Validation error on Create, showing addModal"); addModal.show();</text>
+      }
+      @if (ViewData["ShowEditModal"] != null) {
+        <text>console.log("Validation error on Edit, showing editModal"); editModal.show();</text>
+      }
+    });
+  </script>
 }
-
-
-
-
-
-

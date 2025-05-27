@@ -1,0 +1,8 @@
+@page
+@model MyWebApp.Pages.AppModel
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+  Layout = null;
+}
+@* สั่งให้ model โหลด Application list ใน handler OnGetTablePartial *@
+<partial name="_ApplicationTable" model="Model.Applications" />

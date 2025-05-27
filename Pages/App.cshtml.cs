@@ -4,18 +4,21 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using MyWebApp.Models;
+using Microsoft.Extensions.Logging;
 using MyWebApp.Data;
+using MyWebApp.Models;
 
 namespace MyWebApp.Pages
 {
     public class AppModel : PageModel
     {
         private readonly AppDbContext _context;
+        private readonly ILogger<AppModel> _logger;
 
-        public AppModel(AppDbContext context)
+        public AppModel(AppDbContext context, ILogger<AppModel> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public List<Application> Applications { get; set; } = new();
@@ -36,18 +39,10 @@ namespace MyWebApp.Pages
 
         public async Task<IActionResult> OnPostCreateAsync()
         {
-            // Debug: log all form keys and values
-            Console.WriteLine("===== Request.Form Keys =====");
-            foreach (var key in Request.Form.Keys)
-            {
-                Console.WriteLine($"Key: {key} => {Request.Form[key]}");
-            }
-            Console.WriteLine("===== End Form Keys =====");
+            _logger.LogInformation("OnPostCreateAsync start");
+            Applications = _context.Applications.ToList();
 
-            // Clear existing ModelState to remove stale errors
             ModelState.Clear();
-
-            // Bind the form values into NewApplication
             await TryUpdateModelAsync(
                 NewApplication,
                 "NewApplication",
@@ -59,79 +54,98 @@ namespace MyWebApp.Pages
                 m => m.Telephone
             );
 
-            Console.WriteLine(">>> เริ่ม OnPostCreateAsync <<<");
-
             if (!ModelState.IsValid)
             {
-                Console.WriteLine("ModelState invalid");
-                foreach (var kvp in ModelState)
-                {
-                    foreach (var err in kvp.Value.Errors)
-                    {
-                        Console.WriteLine($"Error in {kvp.Key}: {err.ErrorMessage}");
-                    }
-                }
+                _logger.LogWarning("Create validation failed: {Errors}", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
                 ViewData["ShowAddModal"] = true;
                 return Page();
             }
 
-            try
-            {
-                _context.Applications.Add(NewApplication);
-                await _context.SaveChangesAsync();
-                Console.WriteLine("บันทึกข้อมูลสำเร็จ");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error saving data: " + ex.Message);
-                ModelState.AddModelError(string.Empty, "Error: " + ex.Message);
-                ViewData["ShowAddModal"] = true;
-                return Page();
-            }
+            _context.Applications.Add(NewApplication);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Create saved successfully: {Id}", NewApplication.Id);
 
             return RedirectToPage();
         }
 
         public async Task<IActionResult> OnPostEditAsync()
         {
+            _logger.LogInformation("OnPostEditAsync start: EditApplication.Id={Id}", EditApplication?.Id);
             Applications = _context.Applications.ToList();
 
-            if (EditApplication == null || !ModelState.IsValid)
+            if (EditApplication == null)
             {
+                _logger.LogWarning("EditApplication is null");
                 ViewData["ShowEditModal"] = true;
                 return Page();
             }
-
-            var app = await _context.Applications.FindAsync(EditApplication.Id);
-            if (app == null)
-                return NotFound();
-
-            app.ApplicationId = EditApplication.ApplicationId;
-            app.ApplicationName = EditApplication.ApplicationName;
 
             try
             {
+                var app = await _context.Applications.FindAsync(EditApplication.Id);
+                if (app == null)
+                {
+                    _logger.LogError("Edit failed: Application not found Id={Id}", EditApplication.Id);
+                    return NotFound();
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    _logger.LogWarning("Edit validation failed: {Errors}", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                    ViewData["ShowEditModal"] = true;
+                    return Page();
+                }
+
+                app.ApplicationId = EditApplication.ApplicationId;
+                app.ApplicationName = EditApplication.ApplicationName;
+                app.Status = EditApplication.Status;
+                app.Description = EditApplication.Description;
+                app.ContactName = EditApplication.ContactName;
+                app.Telephone = EditApplication.Telephone;
+
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("Edit saved successfully Id={Id}", app.Id);
+                return RedirectToPage();
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "เกิดข้อผิดพลาดขณะบันทึก: " + ex.Message;
+                _logger.LogError(ex, "Error in OnPostEditAsync for Id={Id}", EditApplication.Id);
+                TempData["Error"] = "เกิดข้อผิดพลาดขณะบันทึกแก้ไข: " + ex.Message;
                 ViewData["ShowEditModal"] = true;
                 return Page();
             }
-
-            return RedirectToPage();
         }
 
         public async Task<IActionResult> OnPostDeleteAsync()
         {
-            var app = await _context.Applications.FindAsync(DeleteId);
-            if (app == null)
-                return NotFound();
+            _logger.LogInformation("OnPostDeleteAsync start: DeleteId={Id}", DeleteId);
+            if (DeleteId <= 0)
+            {
+                _logger.LogWarning("DeleteId invalid: {Id}", DeleteId);
+                return BadRequest();
+            }
 
-            _context.Applications.Remove(app);
-            await _context.SaveChangesAsync();
-            return RedirectToPage();
+            try
+            {
+                var app = await _context.Applications.FindAsync(DeleteId);
+                if (app == null)
+                {
+                    _logger.LogError("Delete failed: Application not found Id={Id}", DeleteId);
+                    return NotFound();
+                }
+
+                _context.Applications.Remove(app);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Delete succeeded Id={Id}", DeleteId);
+                return RedirectToPage();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in OnPostDeleteAsync for Id={Id}", DeleteId);
+                TempData["Error"] = "เกิดข้อผิดพลาดขณะลบ: " + ex.Message;
+                return RedirectToPage();
+            }
         }
     }
 }
