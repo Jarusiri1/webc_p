@@ -1,7 +1,11 @@
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using MyWebApp.Models;
 
-namespace MyWebApp.Data  // เพิ่ม namespace นี้
+namespace MyWebApp.Data
 {
     public class AppDbContext : DbContext
     {
@@ -10,6 +14,34 @@ namespace MyWebApp.Data  // เพิ่ม namespace นี้
         {
         }
 
-        public DbSet<Application> Applications { get; set; } // ถูกต้องแล้ว
+        public DbSet<Application> Applications { get; set; }
+
+        public override int SaveChanges()
+        {
+            ApplyTimestamps();
+            return base.SaveChanges();
+        }
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            ApplyTimestamps();
+            return base.SaveChangesAsync(cancellationToken);
+        }
+
+        private void ApplyTimestamps()
+        {
+            var entries = ChangeTracker
+                .Entries<Application>()
+                .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
+
+            foreach (var entry in entries)
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Entity.CreatedDate = DateTime.Now;
+                }
+                entry.Entity.UpdatedDate = DateTime.Now;
+            }
+        }
     }
 }

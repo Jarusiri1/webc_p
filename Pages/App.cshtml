@@ -139,7 +139,7 @@
         <h5 class="modal-title fw-bold" id="editAppModalLabel">แก้ไขแอปพลิเคชัน</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <form id="editForm" method="post" asp-page-handler="Edit" novalidate>
+        <form id="editForm" method="post" asp-page-handler="Edit" asp-page="/App" novalidate>
         @Html.AntiForgeryToken()
         <div class="modal-body">
             <!-- Hidden for Id only -->
@@ -254,30 +254,26 @@
 
       // override submit ของ editForm
       $('#editForm').on('submit', function(e) {
-        e.preventDefault();
+  e.preventDefault();
 
-        // ดูใน console ก่อนว่ามี field ไหนบ้าง
-        const data = $(this).serialize();
-        console.log(">> editForm data:", data);
+  const data = $(this).serialize();
+  console.log(">> editForm data:", data);
 
-        // เอา URL จาก action attribute ของฟอร์มมาใช้
-        const url = $(this).attr('action');
-        console.log(">> editForm action:", url);
+  // ตรวจสอบ URL ที่ชัดเจน
+  const url = $(this).attr('action') || '/App?handler=Edit';
+  console.log(">> editForm action:", url);
 
-        $.post(url, data)
-          .done(() => {
-            console.log("Edit success");
-            editModal.hide();
-            //window.location.reload();
-          })
-          .fail(xhr => {
-            console.error("Edit error:", xhr.status, xhr.responseText);
-            // ถ้ามี validation error Razor จะ return Page() (status 200) พร้อม HTML
-            // แต่ .done() จะจับไว้ก่อน reload เลยมองไม่เห็น error
-            // จึงแนะนำให้ alert ทั้งหมดกลับมา:
-            alert("Error: " + xhr.responseText || "Unknown error");
-          });
-      });
+  $.post(url, data)
+    .done(() => {
+      console.log("Edit success");
+      editModal.hide();
+      window.location.reload();
+    })
+    .fail(xhr => {
+      console.error("Edit error:", xhr.status, xhr.responseText);
+      alert("Error: " + xhr.responseText || "Unknown error");
+    });
+});
 
       // Submit delete form
       $('#deleteForm').on('submit', function(e) {
@@ -305,3 +301,5 @@
     });
   </script>
 }
+
+

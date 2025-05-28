@@ -31,6 +31,7 @@ namespace MyWebApp.Pages
 
         [BindProperty]
         public int DeleteId { get; set; }
+        
 
         public void OnGet()
         {
@@ -69,52 +70,67 @@ namespace MyWebApp.Pages
         }
 
         public async Task<IActionResult> OnPostEditAsync()
+{
+    _logger.LogInformation("OnPostEditAsync start: EditApplication.Id={Id}", EditApplication?.Id);
+    Applications = _context.Applications.ToList();
+
+    if (EditApplication == null || EditApplication.Id == 0)
+    {
+        _logger.LogWarning("EditApplication is null");
+        ViewData["ShowEditModal"] = true;
+        return Page();
+    }
+
+    // ลองเพิ่มตรงนี้
+    ModelState.Clear();
+
+    await TryUpdateModelAsync(
+        EditApplication,
+        "EditApplication",
+        m => m.ApplicationId,
+        m => m.ApplicationName,
+        m => m.Status,
+        m => m.Description,
+        m => m.ContactName,
+        m => m.Telephone
+    );
+
+    if (!ModelState.IsValid)
+    {
+        _logger.LogWarning("Edit validation failed: {Errors}", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+        ViewData["ShowEditModal"] = true;
+        return Page();
+    }
+
+    try
+    {
+        var app = await _context.Applications.FindAsync(EditApplication.Id);
+        if (app == null)
         {
-            _logger.LogInformation("OnPostEditAsync start: EditApplication.Id={Id}", EditApplication?.Id);
-            Applications = _context.Applications.ToList();
-
-            if (EditApplication == null)
-            {
-                _logger.LogWarning("EditApplication is null");
-                ViewData["ShowEditModal"] = true;
-                return Page();
-            }
-
-            try
-            {
-                var app = await _context.Applications.FindAsync(EditApplication.Id);
-                if (app == null)
-                {
-                    _logger.LogError("Edit failed: Application not found Id={Id}", EditApplication.Id);
-                    return NotFound();
-                }
-
-                if (!ModelState.IsValid)
-                {
-                    _logger.LogWarning("Edit validation failed: {Errors}", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    ViewData["ShowEditModal"] = true;
-                    return Page();
-                }
-
-                app.ApplicationId = EditApplication.ApplicationId;
-                app.ApplicationName = EditApplication.ApplicationName;
-                app.Status = EditApplication.Status;
-                app.Description = EditApplication.Description;
-                app.ContactName = EditApplication.ContactName;
-                app.Telephone = EditApplication.Telephone;
-
-                await _context.SaveChangesAsync();
-                _logger.LogInformation("Edit saved successfully Id={Id}", app.Id);
-                return RedirectToPage();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in OnPostEditAsync for Id={Id}", EditApplication.Id);
-                TempData["Error"] = "เกิดข้อผิดพลาดขณะบันทึกแก้ไข: " + ex.Message;
-                ViewData["ShowEditModal"] = true;
-                return Page();
-            }
+            _logger.LogError("Edit failed: Application not found Id={Id}", EditApplication.Id);
+            return NotFound();
         }
+
+        app.ApplicationId = EditApplication.ApplicationId;
+        app.ApplicationName = EditApplication.ApplicationName;
+        app.Status = EditApplication.Status;
+        app.Description = EditApplication.Description;
+        app.ContactName = EditApplication.ContactName;
+        app.Telephone = EditApplication.Telephone;
+
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Edit saved successfully Id={Id}", app.Id);
+        return RedirectToPage();
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error in OnPostEditAsync for Id={Id}", EditApplication.Id);
+        TempData["Error"] = "เกิดข้อผิดพลาดขณะบันทึกแก้ไข: " + ex.Message;
+        ViewData["ShowEditModal"] = true;
+        return Page();
+    }
+}
+
 
         public async Task<IActionResult> OnPostDeleteAsync()
         {
