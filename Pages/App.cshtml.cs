@@ -131,7 +131,6 @@ namespace MyWebApp.Pages
     }
 }
 
-
         public async Task<IActionResult> OnPostDeleteAsync()
         {
             _logger.LogInformation("OnPostDeleteAsync start: DeleteId={Id}", DeleteId);
