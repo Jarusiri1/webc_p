@@ -15,7 +15,14 @@
     + เพิ่มแอปพลิเคชัน
 </button>
 
-<table class="table table-bordered table-striped">
+<table class="table table-striped table-bordered text-center">
+  <!-- กำหนด colgroup -->
+  <colgroup>
+    <col style="width: 60px;" />   <!-- ลำดับ ให้กว้าง 60px -->
+    <col />                        <!-- ชื่อ ปล่อย auto -->
+    <col />                        <!-- สถานะ ปล่อย auto -->
+    <col />                        <!-- จัดการข้อมูล ปล่อย auto -->
+  </colgroup>
     <thead class="table-light">
         <tr>
             <th>ลำดับ</th>
@@ -43,7 +50,9 @@
                 </td>
                 <td>
                     <button 
-                        class="btn btn-sm btn-warning edit-btn"
+                        class="btn btn-sm btn-warning me-1 edit-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#editAppModal"
                         data-id="@app.Id"
                         data-applicationid="@app.ApplicationId"
                         data-applicationname="@app.ApplicationName"

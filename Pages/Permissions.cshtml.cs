@@ -20,6 +20,10 @@ namespace MyWebApp.Pages
         public Permission NewPermission { get; set; } = new();
 
         [BindProperty]
+        public Permission? EditPermission { get; set; }  // ← เพิ่มตรงนี้
+
+
+        [BindProperty]
         public Guid DeleteId { get; set; }
 
         public void OnGet()
@@ -40,6 +44,28 @@ namespace MyWebApp.Pages
             await _context.SaveChangesAsync();
             return RedirectToPage();
         }
+
+        public async Task<IActionResult> OnPostEditAsync()
+    {
+        Permissions = _context.Permissions.ToList();
+        if (EditPermission == null || EditPermission.Id == Guid.Empty)
+        {
+            ViewData["ShowEditModal"] = true;
+            return Page();
+        }
+        if (!ModelState.IsValid)
+        {
+            ViewData["ShowEditModal"] = true;
+            return Page();
+        }
+        var p = await _context.Permissions.FindAsync(EditPermission.Id);
+        if (p == null) return NotFound();
+        p.Name = EditPermission.Name;
+        p.Description = EditPermission.Description;
+        await _context.SaveChangesAsync();
+        return RedirectToPage();
+    }
+
 
         public async Task<IActionResult> OnPostDeleteAsync()
         {

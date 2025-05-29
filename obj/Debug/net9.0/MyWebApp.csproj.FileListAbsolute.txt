@@ -26,7 +26,6 @@
 /Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/obj/Debug/net9.0/scopedcss/Pages/Shared/_Layout.cshtml.rz.scp.css
 /Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/obj/Debug/net9.0/scopedcss/bundle/MyWebApp.styles.css
 /Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/obj/Debug/net9.0/scopedcss/projectbundle/MyWebApp.bundle.scp.css
-/Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/obj/Debug/net9.0/compressed/fc4x9g7hx4-b9sayid5wm.gz
 /Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/obj/Debug/net9.0/compressed/9kcuxf8biu-61n19gt1b8.gz
 /Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/obj/Debug/net9.0/compressed/lxqromdiip-xtxxf3hu2r.gz
 /Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/obj/Debug/net9.0/compressed/7i9eb05270-bqjiyaj88i.gz
@@ -257,3 +256,4 @@
 /Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/bin/Debug/net9.0/runtimes/win-x64/native/e_sqlite3.dll
 /Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/bin/Debug/net9.0/runtimes/win-x86/native/e_sqlite3.dll
 /Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/obj/Debug/net9.0/MyWebApp.sourcelink.json
+/Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/obj/Debug/net9.0/compressed/fc4x9g7hx4-3y8m7uxm6z.gz
