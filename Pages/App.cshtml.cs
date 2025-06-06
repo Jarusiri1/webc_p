@@ -30,13 +30,22 @@ namespace MyWebApp.Pages
         public Application? EditApplication { get; set; }
 
         [BindProperty]
-        public int DeleteId { get; set; }
-        
+        public Guid DeleteId { get; set; }
 
-        public void OnGet()
-        {
-            Applications = _context.Applications.ToList();
-        }
+       public void OnGet()
+{
+    try
+    {
+        Applications = _context.Applications.ToList();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("ERROR: " + ex.Message);
+        throw;
+    }
+}
+
+
 
         public async Task<IActionResult> OnPostCreateAsync()
         {
@@ -49,7 +58,7 @@ namespace MyWebApp.Pages
                 "NewApplication",
                 m => m.ApplicationId,
                 m => m.ApplicationName,
-                m => m.Status,
+                m => m.ApplicationStatus,
                 m => m.Description,
                 m => m.ContactName,
                 m => m.Telephone
@@ -62,79 +71,88 @@ namespace MyWebApp.Pages
                 return Page();
             }
 
+            NewApplication.ApplicationId = Guid.NewGuid(); // Guid
+            NewApplication.CreateBy = "System";
+            NewApplication.CreatedDate = DateTime.Now;
+
+
+
             _context.Applications.Add(NewApplication);
             await _context.SaveChangesAsync();
-            _logger.LogInformation("Create saved successfully: {Id}", NewApplication.Id);
+            _logger.LogInformation("Create saved successfully: {Id}", NewApplication.ApplicationId);
 
             return RedirectToPage();
         }
 
         public async Task<IActionResult> OnPostEditAsync()
-{
-    _logger.LogInformation("OnPostEditAsync start: EditApplication.Id={Id}", EditApplication?.Id);
-    Applications = _context.Applications.ToList();
-
-    if (EditApplication == null || EditApplication.Id == 0)
-    {
-        _logger.LogWarning("EditApplication is null");
-        ViewData["ShowEditModal"] = true;
-        return Page();
-    }
-
-    // ลองเพิ่มตรงนี้
-    ModelState.Clear();
-
-    await TryUpdateModelAsync(
-        EditApplication,
-        "EditApplication",
-        m => m.ApplicationId,
-        m => m.ApplicationName,
-        m => m.Status,
-        m => m.Description,
-        m => m.ContactName,
-        m => m.Telephone
-    );
-
-    if (!ModelState.IsValid)
-    {
-        _logger.LogWarning("Edit validation failed: {Errors}", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-        ViewData["ShowEditModal"] = true;
-        return Page();
-    }
-
-    try
-    {
-        var app = await _context.Applications.FindAsync(EditApplication.Id);
-        if (app == null)
         {
-            _logger.LogError("Edit failed: Application not found Id={Id}", EditApplication.Id);
-            return NotFound();
+            _logger.LogInformation("OnPostEditAsync start: EditApplication.ApplicationId={Id}", EditApplication?.ApplicationId);
+            Applications = _context.Applications.ToList();
+
+            if (EditApplication == null || EditApplication.ApplicationId == Guid.Empty) 
+
+            {
+                _logger.LogWarning("EditApplication is null");
+                ViewData["ShowEditModal"] = true;
+                return Page();
+            }
+
+            ModelState.Clear();
+            await TryUpdateModelAsync(
+                EditApplication,
+                "EditApplication",
+                m => m.ApplicationId,
+                m => m.ApplicationName,
+                m => m.ApplicationStatus,
+                m => m.Description,
+                m => m.ContactName,
+                m => m.Telephone
+            );
+
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("Edit validation failed: {Errors}", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                ViewData["ShowEditModal"] = true;
+                return Page();
+            }
+
+            try
+            {
+                var app = await _context.Applications.FindAsync(EditApplication.ApplicationId);
+
+                if (app == null)
+                {
+                    _logger.LogError("Edit failed: Application not found Id={Id}", EditApplication.ApplicationId);
+                    return NotFound();
+                }
+
+                app.ApplicationId = EditApplication.ApplicationId;
+                app.ApplicationName = EditApplication.ApplicationName;
+                app.ApplicationStatus = EditApplication.ApplicationStatus;
+                app.Description = EditApplication.Description;
+                app.ContactName = EditApplication.ContactName;
+                app.Telephone = EditApplication.Telephone;
+
+                app.UpdateBy = "System";
+                app.UpdatedDate = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Edit saved successfully Id={Id}", app.ApplicationId);
+                return RedirectToPage();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in OnPostEditAsync for Id={Id}", EditApplication.ApplicationId);
+                TempData["Error"] = "เกิดข้อผิดพลาดขณะบันทึกแก้ไข: " + ex.Message;
+                ViewData["ShowEditModal"] = true;
+                return Page();
+            }
         }
-
-        app.ApplicationId = EditApplication.ApplicationId;
-        app.ApplicationName = EditApplication.ApplicationName;
-        app.Status = EditApplication.Status;
-        app.Description = EditApplication.Description;
-        app.ContactName = EditApplication.ContactName;
-        app.Telephone = EditApplication.Telephone;
-
-        await _context.SaveChangesAsync();
-        _logger.LogInformation("Edit saved successfully Id={Id}", app.Id);
-        return RedirectToPage();
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Error in OnPostEditAsync for Id={Id}", EditApplication.Id);
-        TempData["Error"] = "เกิดข้อผิดพลาดขณะบันทึกแก้ไข: " + ex.Message;
-        ViewData["ShowEditModal"] = true;
-        return Page();
-    }
-}
 
         public async Task<IActionResult> OnPostDeleteAsync()
         {
             _logger.LogInformation("OnPostDeleteAsync start: DeleteId={Id}", DeleteId);
-            if (DeleteId <= 0)
+            if (DeleteId == Guid.Empty)
             {
                 _logger.LogWarning("DeleteId invalid: {Id}", DeleteId);
                 return BadRequest();
@@ -143,6 +161,7 @@ namespace MyWebApp.Pages
             try
             {
                 var app = await _context.Applications.FindAsync(DeleteId);
+
                 if (app == null)
                 {
                     _logger.LogError("Delete failed: Application not found Id={Id}", DeleteId);

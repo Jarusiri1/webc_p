@@ -1,30 +1,36 @@
 {
   "format": 1,
   "restore": {
-    "/Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/MyWebApp.csproj": {}
+    "C:\\Users\\USER\\Desktop\\HELLO\\webc_p\\MyWebApp.csproj": {}
   },
   "projects": {
-    "/Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/MyWebApp.csproj": {
+    "C:\\Users\\USER\\Desktop\\HELLO\\webc_p\\MyWebApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/MyWebApp.csproj",
+        "projectUniqueName": "C:\\Users\\USER\\Desktop\\HELLO\\webc_p\\MyWebApp.csproj",
         "projectName": "MyWebApp",
-        "projectPath": "/Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/MyWebApp.csproj",
-        "packagesPath": "/Users/jarusirikobkaew/.nuget/packages/",
-        "outputPath": "/Users/jarusirikobkaew/Desktop/webc_p/MyWebApp/obj/",
+        "projectPath": "C:\\Users\\USER\\Desktop\\HELLO\\webc_p\\MyWebApp.csproj",
+        "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\USER\\Desktop\\HELLO\\webc_p\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "/Users/jarusirikobkaew/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\USER\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net9.0"
+          "net8.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net9.0": {
-            "targetAlias": "net9.0",
+          "net8.0": {
+            "targetAlias": "net8.0",
             "projectReferences": {}
           }
         },
@@ -37,30 +43,33 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.200"
+        }
       },
       "frameworks": {
-        "net9.0": {
-          "targetAlias": "net9.0",
+        "net8.0": {
+          "targetAlias": "net8.0",
           "dependencies": {
             "Microsoft.AspNetCore.Authentication.OpenIdConnect": {
               "target": "Package",
-              "version": "[9.0.5, )"
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.CodeAnalysis.Analyzers": {
+              "target": "Package",
+              "version": "[3.3.3, )"
             },
             "Microsoft.EntityFrameworkCore.SqlServer": {
               "target": "Package",
-              "version": "[9.0.5, )"
+              "version": "[8.0.0, )"
             },
             "Microsoft.EntityFrameworkCore.Sqlite": {
               "target": "Package",
-              "version": "[9.0.5, )"
+              "version": "[8.0.0, )"
             },
             "Microsoft.EntityFrameworkCore.Tools": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[9.0.5, )"
+              "version": "[8.0.0, )"
             },
             "Microsoft.IdentityModel.Protocols.OpenIdConnect": {
               "target": "Package",
@@ -86,7 +95,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.203/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.313/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

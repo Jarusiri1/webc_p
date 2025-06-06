@@ -15,6 +15,7 @@
   <tbody>
     @foreach (var app in Model) {
       <tr data-id="@app.ApplicationId">
+        <td>@index</td>
         <td>@app.ApplicationId</td>
         <td>@app.ApplicationName</td>
         <td>
