@@ -4,6 +4,11 @@
     ViewData["Title"] = "แอปพลิเคชัน";
 }
 
+@if (TempData["LoginMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["LoginMessage"]</div>
+}
+
 <h2>แอปพลิเคชัน</h2>
 @if (TempData["Error"] != null)
 {
@@ -39,63 +44,69 @@
 
   <!-- กำหนด colgroup -->
   <colgroup>
-    <col style="width: 60px;" />   <!-- ลำดับ ให้กว้าง 60px -->
-    <col />                        <!-- ชื่อ ปล่อย auto -->
-    <col style="width: 150px;"/>    <!-- สถานะ ปล่อย auto -->
-    <col style="width: 180px;"/>                        <!-- จัดการข้อมูล ปล่อย auto -->
-  </colgroup>
+    <col style="width: 60px;" />   <!-- ลำดับ -->
+    <col style="width: 120px;" />  <!-- ID -->
+    <col />                        <!-- ชื่อ -->
+    <col style="width: 100px;" /> <!-- สถานะ -->
+    <col style="width: 120px;" /> <!-- จัดการ -->
+</colgroup>
+
     <thead class="table-light">
         <tr>
             <th>ลำดับ</th>
+            <th>ID</th>
             <th>ชื่อ</th>
             <th>สถานะ</th>
             <th>จัดการข้อมูล</th>
         </tr>
     </thead>
     <tbody>
-        @{ int index = 1; }
-        @foreach (var app in Model.Applications)
-        {
-            <tr>
-                <td>@index</td>
-                <td>@app.ApplicationName</td>
-                <td>
-                    @if (app.ApplicationStatus == "ใช้งาน")
-                    {
-                        <span class="text-success">ใช้งาน</span>
-                    }
-                    else
-                    {
-                        <span class="text-danger">ไม่ได้ใช้งาน</span>
-                    }
-                </td>
-                <td>
-                    <button 
-                        class="btn btn-sm btn-warning me-1 edit-btn"
-                        data-bs-toggle="modal"
-                        data-bs-target="#editAppModal"
-                        data-id="@app.ApplicationId"
-                        data-applicationname="@app.ApplicationName"
-                        data-status="@app.ApplicationStatus"
-                        data-description="@app.Description"
-                        data-contactname="@app.ContactName"
-                        data-telephone="@app.Telephone"
-                    >
-                        แก้ไข
-                    </button>
-                    <button 
-                        class="btn btn-sm btn-danger" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#deleteAppModal"
-                        onclick="fillDeleteModal('@app.ApplicationId', '@app.ApplicationName')"
-                    >
-                        ลบ
-                    </button>
-                </td>
-            </tr>
-            index++;
-        }
-    </tbody>
+    @{ int index = 1; }
+    @foreach (var app in Model.Applications)
+    {
+        <tr>
+            <td>@index</td>
+            <td style="white-space: nowrap;">@app.ApplicationId.ToString().Substring(0, 10)</td>
+            <td class="text-truncate" style="max-width: 200px;">@app.ApplicationName</td>
+
+            <td>
+                @if (app.ApplicationStatus == "ใช้งาน")
+                {
+                    <span class="text-success">ใช้งาน</span>
+                }
+                else
+                {
+                    <span class="text-danger">ไม่ได้ใช้งาน</span>
+                }
+            </td>
+            <td>
+                <button 
+                    class="btn btn-sm btn-warning me-1 edit-btn"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editAppModal"
+                    data-id="@app.ApplicationId"
+                    data-applicationname="@app.ApplicationName"
+                    data-status="@app.ApplicationStatus"
+                    data-description="@app.Description"
+                    data-contactname="@app.ContactName"
+                    data-telephone="@app.Telephone"
+                >
+                    แก้ไข
+                </button>
+                <button 
+                    class="btn btn-sm btn-danger" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#deleteAppModal"
+                    onclick="fillDeleteModal('@app.ApplicationId', '@app.ApplicationName')"
+                >
+                    ลบ
+                </button>
+            </td>
+        </tr>
+        index++;
+    }
+</tbody>
+
 </table>
 
 <!-- Modal: เพิ่ม -->
@@ -356,7 +367,7 @@ document.getElementById("searchInput").addEventListener("input", function () {
   const rows = document.querySelectorAll("#appTable tbody tr");
 
   rows.forEach(row => {
-    const appName = row.children[1]?.textContent.toLowerCase(); // คอลัมน์ชื่ออยู่ index 1
+    const appName = row.children[2]?.textContent.toLowerCase(); // คอลัมน์ชื่ออยู่ index 1
     row.style.display = appName.includes(filter) ? "" : "none";
   });
 });

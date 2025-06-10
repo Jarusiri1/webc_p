@@ -20,7 +20,8 @@ namespace MyWebApp.Models
         public string ApplicationStatus { get; set; } = default!;
 
         [Column("Description")]
-        public string? Description { get; set; }
+        public string Description { get; set; } = string.Empty;
+
 
         [Required(ErrorMessage = "กรุณากรอกชื่อผู้ติดต่อ")]
         [Column("ContactName")]

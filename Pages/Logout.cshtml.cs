@@ -1,15 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace MyWebApp.Pages;
-
-public class LogoutModel : PageModel
+namespace MyWebApp.Pages
 {
-    public async Task<IActionResult> OnPostAsync()
+    public class LogoutModel : PageModel
     {
-        await HttpContext.SignOutAsync("Cookies");
-        await HttpContext.SignOutAsync("oidc");
-        return RedirectToPage("/Index");
+        public IActionResult OnGet()
+        {
+            TempData.Clear(); // ล้างข้อมูล login
+            return RedirectToPage("/Login"); // กลับไปหน้า Login
+        }
     }
 }

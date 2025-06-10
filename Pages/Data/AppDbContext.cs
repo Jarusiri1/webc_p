@@ -44,5 +44,7 @@ namespace MyWebApp.Data
                 entry.Entity.UpdatedDate = DateTime.Now;
             }
         }
+        public DbSet<ApplicationAdmin> ApplicationAdmins { get; set; }
+
     }
 }

@@ -32,8 +32,8 @@
     {
       <tr>
         <td>@idx</td>
-        <td>@p.Id</td>
-        <td>@p.Name</td>
+        <td>@p.PermissionId</td>
+        <td>@p.PermissionName</td>
         <td>@p.Description</td>
         <td>
         <button 
@@ -41,12 +41,12 @@
             class="btn btn-sm btn-warning me-1"
             data-bs-toggle="modal" 
             data-bs-target="#editPermModal"
-            onclick="fillEditPermModal('@p.Id','@p.Name','@p.Description')">
+            onclick="fillEditPermModal('@p.PermissionId','@p.PermissionName','@p.Description')">
         แก้ไข
         </button>
         <button type="button" 
             class="btn btn-sm btn-danger" 
-            onclick="showDeletePermModal('@p.Id','@p.Name')">ลบ</button>
+            onclick="showDeletePermModal('@p.PermissionId','@p.PermissionName')">ลบ</button>
         </td>
       </tr>
       idx++;
@@ -58,7 +58,7 @@
 <div class="modal fade" id="addPermModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form method="post" asp-page-handler="Create">
+      <form method="post" asp-page-handler="Create" id="createForm" accept-charset="UTF-8" asp-antiforgery="true">
         <div class="modal-header">
           <h5 class="modal-title">เพิ่มสิทธิ์การใช้งาน</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -66,20 +66,33 @@
         <div class="modal-body">
           <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
 
+       <div class="mb-3">
+  <label asp-for="NewPermission.ApplicationId" class="form-label"></label>
+  <select asp-for="NewPermission.ApplicationId" class="form-select">
+    <option value="">-- กรุณาเลือกแอปพลิเคชัน --</option>
+    @foreach (var app in (ViewData["ApplicationList"] as List<MyWebApp.Models.Application>) ?? new())
+    {
+        <option value="@app.ApplicationId">@app.ApplicationName (@app.ApplicationId)</option> <!-- ✅ ApplicationId อยู่ใน value เท่านั้น -->
+
+    }
+  </select>
+  <span asp-validation-for="NewPermission.ApplicationId" class="text-danger d-block"></span>
+</div>
+
           <div class="mb-3">
-            <label asp-for="NewPermission.Name" class="form-label"></label>
-            <input asp-for="NewPermission.Name" class="form-control" />
-            <span asp-validation-for="NewPermission.Name" class="text-danger d-block"></span>
+            <label asp-for="NewPermission.PermissionName" class="form-label"></label>
+            <input asp-for="NewPermission.PermissionName" class="form-control" />
+            <span asp-validation-for="NewPermission.PermissionName" class="text-danger d-block"></span>
           </div>
 
           <div class="mb-3">
             <label asp-for="NewPermission.Description" class="form-label"></label>
-            <textarea asp-for="NewPermission.Description" class="form-control"></textarea>
+            <textarea asp-for="NewPermission.Description" name="NewPermission.Description" class="form-control"></textarea>
             <span asp-validation-for="NewPermission.Description" class="text-danger d-block"></span>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-success">บันทึก</button>
+         <button type="submit" class="btn btn-success">บันทึก</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
         </div>
       </form>
@@ -97,11 +110,11 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <input type="hidden" asp-for="EditPermission.Id" />
+          <input type="hidden" asp-for="EditPermission.PermissionId" />
           <div class="mb-3">
-            <label asp-for="EditPermission.Name" class="form-label"></label>
-            <input asp-for="EditPermission.Name" class="form-control" />
-            <span asp-validation-for="EditPermission.Name" class="text-danger d-block"></span>
+            <label asp-for="EditPermission.PermissionName" class="form-label"></label>
+            <input asp-for="EditPermission.PermissionName" class="form-control" />
+            <span asp-validation-for="EditPermission.PermissionName" class="text-danger d-block"></span>
           </div>
           <div class="mb-3">
             <label asp-for="EditPermission.Description" class="form-label"></label>
@@ -146,26 +159,43 @@
   <partial name="_ValidationScriptsPartial" />
 
   <script>
-
     function fillEditPermModal(id, name, desc) {
-      document.querySelector('#editPermModal input[name="EditPermission.Id"]').value = id;
-      document.querySelector('#editPermModal input[name="EditPermission.Name"]').value = name;
+      document.querySelector('#editPermModal input[name="EditPermission.PermissionId"]').value = id;
+      document.querySelector('#editPermModal input[name="EditPermission.PermissionName"]').value = name;
       document.querySelector('#editPermModal textarea[name="EditPermission.Description"]').value = desc;
+
+      const modal = new bootstrap.Modal(document.getElementById('editPermModal'));
+      modal.show(); // ✅ เปิด modal edit ด้วย API ที่ถูกต้อง
     }
 
     function showDeletePermModal(id, name) {
       document.getElementById('deletePermName').textContent = name;
       document.getElementById('deletePermId').value = id;
-      new bootstrap.Modal(document.getElementById('deletePermModal')).show();
+
+      const modal = new bootstrap.Modal(document.getElementById('deletePermModal'));
+      modal.show(); // ✅ เปิด modal delete ด้วย API ที่ถูกต้อง
     }
 
-    @* ถ้ามี error validation ของ Create ให้เปิด addModal เหมือนเดิม *@
-    @if ((bool?)(ViewData["ShowAddModal"]) == true) {
-      <text>$(function(){ $('#addPermModal').modal('show'); });</text>
+    // ✅ แสดง addPermModal ถ้ามี error
+    @if ((bool?)ViewData["ShowAddModal"] == true) {
+      <text>
+        document.addEventListener('DOMContentLoaded', function () {
+          const modal = new bootstrap.Modal(document.getElementById('addPermModal'));
+          modal.show();
+        });
+      </text>
     }
-    @if ((bool?)(ViewData["ShowEditModal"]) == true) {
-      <text>new bootstrap.Modal('#editPermModal').show();</text>
+
+    // ✅ แสดง editPermModal ถ้ามี error
+    @if ((bool?)ViewData["ShowEditModal"] == true) {
+      <text>
+        document.addEventListener('DOMContentLoaded', function () {
+          const modal = new bootstrap.Modal(document.getElementById('editPermModal'));
+          modal.show();
+        });
+      </text>
     }
   </script>
 }
+
 

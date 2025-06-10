@@ -32,19 +32,31 @@ namespace MyWebApp.Pages
         [BindProperty]
         public Guid DeleteId { get; set; }
 
-       public void OnGet()
+        public void OnGet()
 {
+    if (TempData["EmployeeNo"] == null)
+    {
+        Response.Redirect("/Login");
+        return;
+    }
+
+    var employeeNo = TempData["EmployeeNo"]?.ToString();
+    TempData.Keep("EmployeeNo");
+
     try
     {
-        Applications = _context.Applications.ToList();
+        Applications = (from app in _context.Applications
+                        join admin in _context.ApplicationAdmins
+                        on app.ApplicationId.ToString() equals admin.ApplicationId
+                        where admin.EmployeeNo == employeeNo
+                        select app).ToList();
     }
     catch (Exception ex)
     {
-        Console.WriteLine("ERROR: " + ex.Message);
+        _logger.LogError(ex, "Error loading applications for EmployeeNo={EmployeeNo}", employeeNo);
         throw;
     }
 }
-
 
 
         public async Task<IActionResult> OnPostCreateAsync()
@@ -71,17 +83,30 @@ namespace MyWebApp.Pages
                 return Page();
             }
 
-            NewApplication.ApplicationId = Guid.NewGuid(); // Guid
+            NewApplication.ApplicationId = Guid.NewGuid();
             NewApplication.CreateBy = "System";
             NewApplication.CreatedDate = DateTime.Now;
-
-
-
             _context.Applications.Add(NewApplication);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Create saved successfully: {Id}", NewApplication.ApplicationId);
 
-            return RedirectToPage();
+            // ✅ เพิ่ม ApplicationAdmin
+    var employeeNo = TempData["EmployeeNo"]?.ToString();
+    TempData.Keep("EmployeeNo");
+
+    if (!string.IsNullOrEmpty(employeeNo))
+    {
+        var admin = new ApplicationAdmin
+        {
+            ApplicationAdminId = Guid.NewGuid(),
+            ApplicationId = NewApplication.ApplicationId.ToString(),
+            EmployeeNo = employeeNo
+        };
+        _context.ApplicationAdmins.Add(admin);
+    }
+
+    await _context.SaveChangesAsync();
+    _logger.LogInformation("Create saved successfully: {Id}", NewApplication.ApplicationId);
+
+    return RedirectToPage();
         }
 
         public async Task<IActionResult> OnPostEditAsync()
@@ -89,8 +114,7 @@ namespace MyWebApp.Pages
             _logger.LogInformation("OnPostEditAsync start: EditApplication.ApplicationId={Id}", EditApplication?.ApplicationId);
             Applications = _context.Applications.ToList();
 
-            if (EditApplication == null || EditApplication.ApplicationId == Guid.Empty) 
-
+            if (EditApplication == null || EditApplication.ApplicationId == Guid.Empty)
             {
                 _logger.LogWarning("EditApplication is null");
                 ViewData["ShowEditModal"] = true;
@@ -181,5 +205,7 @@ namespace MyWebApp.Pages
                 return RedirectToPage();
             }
         }
+
+        
     }
 }

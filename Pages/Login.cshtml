@@ -1,8 +1,49 @@
 @page
 @model MyWebApp.Pages.LoginModel
 @{
-    ViewData["Title"] = "Login";
+    Layout = null;
 }
 
-<h2>Redirecting to PEA SSO...</h2>
-<p>If you are not redirected, <a href="/">click here</a>.</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>เข้าสู่ระบบ - PEA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #F5F5FA;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h4 class="mb-4 text-center">เข้าสู่ระบบ</h4>
+        <form method="post">
+            <div class="mb-3">
+                <label asp-for="EmployeeNo" class="form-label">รหัสพนักงาน</label>
+                <input asp-for="EmployeeNo" class="form-control" />
+                <span asp-validation-for="EmployeeNo" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">เข้าสู่ระบบ</button>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+</body>
+</html>
