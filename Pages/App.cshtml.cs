@@ -33,31 +33,41 @@ namespace MyWebApp.Pages
         public Guid DeleteId { get; set; }
 
         public void OnGet()
-{
-    if (TempData["EmployeeNo"] == null)
-    {
-        Response.Redirect("/Login");
-        return;
-    }
+        {
+            if (TempData["EmployeeNo"] == null)
+            {
+                Response.Redirect("/Login");
+                return;
+            }
 
-    var employeeNo = TempData["EmployeeNo"]?.ToString();
-    TempData.Keep("EmployeeNo");
+            var employeeNo = TempData["EmployeeNo"]?.ToString();
+            TempData.Keep("EmployeeNo");
 
-    try
-    {
-        Applications = (from app in _context.Applications
-                        join admin in _context.ApplicationAdmins
-                        on app.ApplicationId.ToString() equals admin.ApplicationId
-                        where admin.EmployeeNo == employeeNo
-                        select app).ToList();
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Error loading applications for EmployeeNo={EmployeeNo}", employeeNo);
-        throw;
-    }
-}
+            // ⭐ เพิ่มส่วนนี้ - สร้าง NewApplication ใหม่ที่มีค่าว่าง
+            NewApplication = new Application
+            {
+                ApplicationId = Guid.Empty, // หรือใช้ default(Guid)
+                ApplicationName = string.Empty,
+                ApplicationStatus = string.Empty,
+                Description = string.Empty,
+                ContactName = string.Empty,
+                Telephone = string.Empty
+            };
 
+            try
+            {
+                Applications = (from app in _context.Applications
+                                join admin in _context.ApplicationAdmins
+                                on app.ApplicationId.ToString() equals admin.ApplicationId
+                                where admin.EmployeeNo == employeeNo
+                                select app).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading applications for EmployeeNo={EmployeeNo}", employeeNo);
+                throw;
+            }
+        }
 
         public async Task<IActionResult> OnPostCreateAsync()
         {
@@ -76,6 +86,12 @@ namespace MyWebApp.Pages
                 m => m.Telephone
             );
 
+            // ⭐ เพิ่มการตรวจสอบ ApplicationId ว่างหรือเป็น Guid.Empty
+            if (NewApplication.ApplicationId == Guid.Empty)
+            {
+                ModelState.AddModelError("NewApplication.ApplicationId", "กรุณากรอกรหัสแอปพลิเคชัน");
+            }
+
             if (!ModelState.IsValid)
             {
                 _logger.LogWarning("Create validation failed: {Errors}", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
@@ -83,30 +99,52 @@ namespace MyWebApp.Pages
                 return Page();
             }
 
-            NewApplication.ApplicationId = Guid.NewGuid();
+            // ✅ ตรวจสอบว่า ApplicationId ซ้ำหรือไม่
+            var existingApp = await _context.Applications.FindAsync(NewApplication.ApplicationId);
+            if (existingApp != null)
+            {
+                ModelState.AddModelError("NewApplication.ApplicationId", "ApplicationId นี้มีอยู่แล้ว");
+                ViewData["ShowAddModal"] = true;
+                return Page();
+            }
+
             NewApplication.CreateBy = "System";
             NewApplication.CreatedDate = DateTime.Now;
             _context.Applications.Add(NewApplication);
 
-            // ✅ เพิ่ม ApplicationAdmin
-    var employeeNo = TempData["EmployeeNo"]?.ToString();
-    TempData.Keep("EmployeeNo");
+            // เพิ่ม ApplicationAdmin
+            var employeeNo = TempData["EmployeeNo"]?.ToString();
+            TempData.Keep("EmployeeNo");
 
-    if (!string.IsNullOrEmpty(employeeNo))
-    {
-        var admin = new ApplicationAdmin
+            if (!string.IsNullOrEmpty(employeeNo))
+            {
+                var admin = new ApplicationAdmin
+                {
+                    ApplicationAdminId = Guid.NewGuid(),
+                    ApplicationId = NewApplication.ApplicationId.ToString(),
+                    EmployeeNo = employeeNo
+                };
+                _context.ApplicationAdmins.Add(admin);
+            }
+
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Create saved successfully: {Id}", NewApplication.ApplicationId);
+
+            return RedirectToPage();
+        }
+
+        // ⭐ เพิ่ม method สำหรับรีเซ็ต NewApplication
+        private void ResetNewApplication()
         {
-            ApplicationAdminId = Guid.NewGuid(),
-            ApplicationId = NewApplication.ApplicationId.ToString(),
-            EmployeeNo = employeeNo
-        };
-        _context.ApplicationAdmins.Add(admin);
-    }
-
-    await _context.SaveChangesAsync();
-    _logger.LogInformation("Create saved successfully: {Id}", NewApplication.ApplicationId);
-
-    return RedirectToPage();
+            NewApplication = new Application
+            {
+                ApplicationId = Guid.Empty,
+                ApplicationName = string.Empty,
+                ApplicationStatus = string.Empty,
+                Description = string.Empty,
+                ContactName = string.Empty,
+                Telephone = string.Empty
+            };
         }
 
         public async Task<IActionResult> OnPostEditAsync()
@@ -162,6 +200,10 @@ namespace MyWebApp.Pages
 
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("Edit saved successfully Id={Id}", app.ApplicationId);
+                
+                // ⭐ รีเซ็ต NewApplication หลังจากแก้ไขสำเร็จ
+                ResetNewApplication();
+                
                 return RedirectToPage();
             }
             catch (Exception ex)
@@ -196,6 +238,10 @@ namespace MyWebApp.Pages
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("Delete succeeded Id={Id}", DeleteId);
+                
+                // ⭐ รีเซ็ต NewApplication หลังจากลบสำเร็จ
+                ResetNewApplication();
+                
                 return RedirectToPage();
             }
             catch (Exception ex)
@@ -205,7 +251,5 @@ namespace MyWebApp.Pages
                 return RedirectToPage();
             }
         }
-
-        
     }
 }
