@@ -56,11 +56,12 @@ namespace MyWebApp.Pages
 
             try
             {
-                Applications = (from app in _context.Applications
-                                join admin in _context.ApplicationAdmins
-                                on app.ApplicationId.ToString() equals admin.ApplicationId
-                                where admin.EmployeeNo == employeeNo
-                                select app).ToList();
+                // ใช้การ join แบบนี้แทน:
+Applications = (from app in _context.Applications
+                join admin in _context.ApplicationAdmins
+                on app.ApplicationId equals admin.ApplicationId  // เปรียบเทียบ Guid กับ Guid
+                where admin.EmployeeNo == employeeNo
+                select app).ToList();
             }
             catch (Exception ex)
             {
@@ -121,7 +122,7 @@ namespace MyWebApp.Pages
                 var admin = new ApplicationAdmin
                 {
                     ApplicationAdminId = Guid.NewGuid(),
-                    ApplicationId = NewApplication.ApplicationId.ToString(),
+                    ApplicationId = NewApplication.ApplicationId,  // เก็บเป็น Guid โดยตรง,
                     EmployeeNo = employeeNo
                 };
                 _context.ApplicationAdmins.Add(admin);

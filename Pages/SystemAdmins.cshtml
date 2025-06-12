@@ -1,0 +1,338 @@
+@page
+@model MyWebApp.Pages.SystemAdminsModel
+@{
+    ViewData["Title"] = "ผู้ดูแลระบบ";
+}
+
+@if (TempData["LoginMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["LoginMessage"]</div>
+}
+
+<h2>ผู้ดูแลระบบ</h2>
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<!-- ปุ่มกดเพื่อเปิด Modal -->
+<button 
+    class="btn btn-success mb-3 float-end" 
+    data-bs-toggle="modal" 
+    data-bs-target="#addAdminModal">
+    + เพิ่มผู้ดูแลระบบ
+</button>
+
+<!-- ช่องค้นหา -->
+<div class="d-flex justify-content-start mb-3 gap-2" style="max-width: 400px;">
+  <!-- ช่องค้นหา -->
+  <div class="input-group input-group-sm" style="max-width: 250px;">
+    <input id="searchInput" type="text" class="form-control" placeholder="ค้นหาผู้ดูแล" />
+    <span class="input-group-text">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="gray" viewBox="0 0 16 16">
+        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 
+        1 0 0 0 1.415-1.415l-3.85-3.85zm-5.242 1.4a5.5 5.5 0 1 1 
+        0-11 5.5 5.5 0 0 1 0 11z"/>
+      </svg>
+    </span>
+  </div>
+  
+  <!-- ปุ่มรีเซ็ต -->
+  <button id="resetFilter" class="btn btn-outline-secondary btn-sm" type="button" title="รีเซ็ตการค้นหา">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+      <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+    </svg>
+  </button>
+</div>
+
+<table id="adminTable" class="table table-striped table-bordered text-center" style="table-layout: fixed; width: 100%;">
+  <!-- กำหนด colgroup -->
+  <colgroup>
+    <col style="width: 60px;" />   <!-- ลำดับ -->
+    <col style="width: 120px;" />  <!-- รหัส -->
+    <col />                        <!-- ชื่อ-สกุล -->
+    <col style="width: 200px;" />  <!-- แอปพลิเคชัน -->
+    <col style="width: 120px;" />  <!-- จัดการ -->
+  </colgroup>
+
+  <thead class="table-light">
+    <tr>
+      <th>ลำดับ</th>
+      <th>รหัส</th>
+      <th>ชื่อ-สกุล</th>
+      <th>แอปพลิเคชัน</th>
+      <th>จัดการข้อมูล</th>
+    </tr>
+  </thead>
+  <tbody>
+    @{ int index = 1; }
+    @foreach (var admin in Model.ApplicationAdmins)
+    {
+      <tr>
+        <td>@index</td>
+        <td class="text-start" style="max-width: 120px; overflow: hidden; white-space: nowrap;">@admin.EmployeeNo</td>
+        <td class="text-start" style="max-width: 200px; overflow: hidden; white-space: nowrap;">@(admin.FullName ?? admin.EmployeeNo)</td>
+        <td class="text-start" style="max-width: 200px; overflow: hidden; white-space: nowrap;">
+          @{
+            var app = ViewData["ApplicationList"] as List<MyWebApp.Models.Application>;
+            var foundApp = app?.FirstOrDefault(a => a.ApplicationId == admin.ApplicationId); // ⭐ เปรียบเทียบ Guid กับ Guid
+          }
+          @(foundApp?.ApplicationName ?? "ไม่พบแอป")
+        </td>
+        <td>
+          <button 
+              class="btn btn-sm btn-warning me-1 edit-btn"
+              data-bs-toggle="modal"
+              data-bs-target="#editAdminModal"
+              data-id="@admin.ApplicationAdminId"
+              data-employeeno="@admin.EmployeeNo"
+              data-fullname="@admin.FullName"
+              data-applicationid="@admin.ApplicationId"
+          >
+              แก้ไข
+          </button>
+          <button 
+              class="btn btn-sm btn-danger" 
+              data-bs-toggle="modal" 
+              data-bs-target="#deleteAdminModal"
+              onclick="fillDeleteModal('@admin.ApplicationAdminId', '@admin.FullName')"
+          >
+              ลบ
+          </button>
+        </td>
+      </tr>
+      index++;
+    }
+  </tbody>
+</table>
+
+<!-- Modal: เพิ่มผู้ดูแลระบบ -->
+<div class="modal fade" id="addAdminModal" tabindex="-1" aria-labelledby="addAdminModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content bg-light">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="addAdminModalLabel">เพิ่มผู้ดูแลระบบ</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="addAdminForm" method="post" asp-page-handler="Create">
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-1 ms-4 mt-n2"></div>
+
+        <div class="modal-body">
+          <div class="mb-3">
+            <label asp-for="NewApplicationAdmin.ApplicationId" class="form-label">เลือกแอปพลิเคชัน</label>
+            <select asp-for="NewApplicationAdmin.ApplicationId"
+                    name="NewApplicationAdmin.ApplicationId"
+                    class="form-select @(ViewData.ModelState[nameof(Model.NewApplicationAdmin.ApplicationId)]?.Errors.Count > 0 ? "is-invalid" : "")"
+                    required>
+              <option value="">-- เลือกแอปพลิเคชัน --</option>
+              @if (ViewData["ApplicationList"] is List<MyWebApp.Models.Application> appList)
+              {
+                @foreach(var app in appList)
+                {
+                  <option value="@app.ApplicationId">@app.ApplicationName</option>
+                }
+              }
+            </select>
+            <span asp-validation-for="NewApplicationAdmin.ApplicationId" class="text-danger d-block mb-3"></span>
+          </div>
+          
+          <div class="mb-3">
+            <label asp-for="NewApplicationAdmin.EmployeeNo" class="form-label">รหัสพนักงาน</label>
+            <input asp-for="NewApplicationAdmin.EmployeeNo"
+                   name="NewApplicationAdmin.EmployeeNo"
+                   class="form-control @(ViewData.ModelState[nameof(Model.NewApplicationAdmin.EmployeeNo)]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                   placeholder="เช่น: EMP001, 12345"
+                   required />
+            <span asp-validation-for="NewApplicationAdmin.EmployeeNo" class="text-danger d-block mb-3"></span>
+          </div>
+          
+          <div class="mb-3">
+            <label asp-for="NewApplicationAdmin.FullName" class="form-label">ชื่อ-นามสกุล (ไม่บังคับ)</label>
+            <input asp-for="NewApplicationAdmin.FullName"
+                   name="NewApplicationAdmin.FullName"
+                   class="form-control @(ViewData.ModelState[nameof(Model.NewApplicationAdmin.FullName)]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                   placeholder="เช่น: นายสมชาย ใจดี" />
+            <span asp-validation-for="NewApplicationAdmin.FullName" class="text-danger d-block"></span>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">บันทึก</button>
+          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">ยกเลิก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: แก้ไขผู้ดูแลระบบ -->
+<div class="modal fade" id="editAdminModal" tabindex="-1" aria-labelledby="editAdminModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content bg-light">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="editAdminModalLabel">แก้ไขผู้ดูแลระบบ</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="editAdminForm" method="post" asp-page-handler="Edit" novalidate>
+        @Html.AntiForgeryToken()
+        <div class="modal-body">
+          <!-- Hidden for Id only -->
+          <input type="hidden" asp-for="EditApplicationAdmin.ApplicationAdminId" id="Edit_ApplicationAdminId" />
+          <input type="hidden" asp-for="EditApplicationAdmin.ApplicationId" id="Edit_ApplicationId" />
+
+          <div class="mb-3">
+            <label asp-for="EditApplicationAdmin.EmployeeNo" class="form-label">รหัสพนักงาน</label>
+            <input asp-for="EditApplicationAdmin.EmployeeNo" id="Edit_EmployeeNo" class="form-control" />
+            <span asp-validation-for="EditApplicationAdmin.EmployeeNo" class="invalid-feedback"></span>
+          </div>
+          
+          <div class="mb-3">
+            <label asp-for="EditApplicationAdmin.FullName" class="form-label">ชื่อ-นามสกุล</label>
+            <input asp-for="EditApplicationAdmin.FullName" id="Edit_FullName" class="form-control" />
+            <span asp-validation-for="EditApplicationAdmin.FullName" class="invalid-feedback"></span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-warning">บันทึก</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: ลบผู้ดูแลระบบ -->
+<div class="modal fade" id="deleteAdminModal" tabindex="-1" aria-labelledby="deleteAdminModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content bg-light">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">ยืนยันการลบ</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="deleteAdminForm" method="post" asp-page-handler="Delete">
+        @Html.AntiForgeryToken()
+        <div class="modal-body">
+          <input type="hidden" asp-for="DeleteId" />
+          <p>คุณแน่ใจหรือไม่ว่าต้องการลบผู้ดูแลระบบ: <strong id="Delete_AdminName"></strong>?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-danger">ลบ</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+<script>
+  // สร้างฟังก์ชัน delete ให้เป็น global
+  function fillDeleteModal(id, adminName) {
+    console.log("fillDeleteModal called with", id, adminName);
+    $('#Delete_AdminName').text(adminName);
+    $('#DeleteId').val(id.toString());
+    new bootstrap.Modal($('#deleteAdminModal')).show();
+  }
+  window.fillDeleteModal = fillDeleteModal;
+
+  $(function() {
+    const addModal = new bootstrap.Modal($('#addAdminModal')[0]);
+    const editModal = new bootstrap.Modal($('#editAdminModal')[0]);
+
+    // เคลียร์ฟอร์ม + validation เมื่อปิด add modal
+    $('#addAdminModal').on('hidden.bs.modal', function () {
+      const $form = $(this).find('form');
+      $form[0].reset();
+      
+      // เคลียร์ค่าทุก input รวมถึง select
+      $form.find('input, select, textarea').val('');
+      $form.find('select').prop('selectedIndex', 0);
+      
+      // เคลียร์ validation error messages
+      $form.find('span.field-validation-error, span.text-danger, span.invalid-feedback').empty();
+      $form.find('.is-invalid').removeClass('is-invalid');
+      
+      // เคลียร์ validation summary
+      $form.find('[asp-validation-summary] ul').empty();
+    });
+
+    // เคลียร์ฟอร์ม + validation เมื่อปิด edit modal
+    $('#editAdminModal').on('hidden.bs.modal', function () {
+      const $form = $(this).find('form');
+      $form[0].reset();
+      $form.find('span.field-validation-error, span.text-danger, span.invalid-feedback').empty();
+      $form.find('.is-invalid').removeClass('is-invalid');
+    });
+
+    // Click edit button
+    $(document).on('click', '.edit-btn', function() {
+      const btn = $(this);
+      $('#Edit_ApplicationAdminId').val(btn.data('id'));
+      $('#Edit_ApplicationId').val(btn.data('applicationid'));
+      $('#Edit_EmployeeNo').val(btn.data('employeeno'));
+      $('#Edit_FullName').val(btn.data('fullname'));
+      editModal.show();
+    });
+
+    // Submit delete form
+    $(document).on('submit', '#deleteAdminForm', function(e) {
+      e.preventDefault();
+      $.post($(this).attr('action'), $(this).serialize())
+        .done(() => {
+          console.log("Delete success");
+          $('#deleteAdminModal').modal('hide');
+          window.location.reload();
+        })
+        .fail(xhr => {
+          console.error("Delete error:", xhr.responseText);
+          alert('Error: ' + xhr.responseText);
+        });
+    });
+
+    // ฟังก์ชันค้นหา
+    function filterTable() {
+      const searchFilter = document.getElementById("searchInput").value.toLowerCase();
+      const rows = document.querySelectorAll("#adminTable tbody tr");
+
+      rows.forEach(row => {
+        const employeeNo = row.children[1]?.textContent.toLowerCase() || ""; // รหัส
+        const fullName = row.children[2]?.textContent.toLowerCase() || ""; // ชื่อ-สกุล
+        const appName = row.children[3]?.textContent.toLowerCase() || ""; // แอปพลิเคชัน
+
+        const matchFound = searchFilter === "" || 
+                          employeeNo.includes(searchFilter) || 
+                          fullName.includes(searchFilter) ||
+                          appName.includes(searchFilter);
+
+        row.style.display = matchFound ? "" : "none";
+      });
+    }
+
+    // Event listeners
+    document.getElementById("searchInput").addEventListener("input", filterTable);
+    
+    // ปุ่มรีเซ็ต
+    document.getElementById("resetFilter").addEventListener("click", function() {
+      document.getElementById("searchInput").value = "";
+      filterTable();
+    });
+
+    // Auto-open modals on validation error
+    @if ((bool?)(ViewData["ShowAddModal"]) == true) {
+      <text>
+        console.log("Validation error on Create, showing addModal");
+        addModal.show();
+      </text>
+    }
+    @if ((bool?)(ViewData["ShowEditModal"]) == true) {
+      <text>
+        console.log("Validation error on Edit, showing editModal");
+        editModal.show();
+      </text>
+    }
+  });
+</script>
+}

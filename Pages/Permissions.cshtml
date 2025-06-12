@@ -23,9 +23,10 @@
     + เพิ่มสิทธิ์การใช้งาน
 </button>
 
-<!-- ช่องค้นหาแบบเล็ก และมินิมอล -->
-<form class="d-flex justify-content-end mb-3" style="max-width: 300px;">
-  <div class="input-group input-group-sm">
+<!-- ช่องค้นหาและกรองข้อมูล -->
+<div class="d-flex justify-content-end mb-3 gap-2" style="max-width: 500px;">
+  <!-- ช่องค้นหา -->
+  <div class="input-group input-group-sm" style="max-width: 250px;">
     <input id="searchInput" type="text" class="form-control" placeholder="ค้นหาสิทธิ์" />
     <span class="input-group-text">
       <!-- ไอคอนมินิมอลแบบ SVG -->
@@ -36,7 +37,29 @@
       </svg>
     </span>
   </div>
-</form>
+  
+  <!-- กรองตามแอปพลิเคชัน -->
+  <div class="input-group input-group-sm" style="max-width: 200px;">
+    <select id="filterByApp" class="form-select">
+      <option value="">ทุกแอปพลิเคชัน</option>
+      @if (ViewData["ApplicationList"] is List<MyWebApp.Models.Application> applicationList)
+      {
+        @foreach(var app in applicationList)
+        {
+          <option value="@app.ApplicationId">@app.ApplicationName</option>
+        }
+      }
+    </select>
+  </div>
+  
+  <!-- ปุ่มรีเซ็ต -->
+  <button id="resetFilter" class="btn btn-outline-secondary btn-sm" type="button" title="รีเซ็ตการกรอง">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+      <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+    </svg>
+  </button>
+</div>
 
 <table id="permissionTable" class="table table-striped table-bordered text-center" style="table-layout: fixed; width: 100%;">
   <!-- กำหนด colgroup -->
@@ -61,12 +84,13 @@
     {
       <tr>
         <td>@index</td>
-        <td class="text-truncate" style="max-width: 200px;">@permission.PermissionName</td>
-        <td class="text-truncate" style="max-width: 200px;">
+        <td class="text-start" style="max-width: 200px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">@permission.PermissionName</td>
+        <td class="text-start" style="max-width: 200px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           @{
-            var app = ((List<MyWebApp.Models.Application>)ViewData["ApplicationList"])?.FirstOrDefault(a => a.ApplicationId == permission.ApplicationId);
+            var app = ViewData["ApplicationList"] as List<MyWebApp.Models.Application>;
+            var foundApp = app?.FirstOrDefault(a => a.ApplicationId == permission.ApplicationId);
           }
-          @(app?.ApplicationName ?? "ไม่พบแอป")
+          @(foundApp?.ApplicationName ?? "ไม่พบแอป")
         </td>
         <td>
           <button 
@@ -116,9 +140,9 @@
                     class="form-select @(ViewData.ModelState[nameof(Model.NewPermission.ApplicationId)]?.Errors.Count > 0 ? "is-invalid" : "")"
                     required>
               <option value="">-- เลือกแอปพลิเคชัน --</option>
-              @if (ViewData["ApplicationList"] != null)
+              @if (ViewData["ApplicationList"] is List<MyWebApp.Models.Application> appList)
               {
-                @foreach(var app in (List<MyWebApp.Models.Application>)ViewData["ApplicationList"])
+                @foreach(var app in appList)
                 {
                   <option value="@app.ApplicationId">@app.ApplicationName</option>
                 }
@@ -137,14 +161,14 @@
             <span asp-validation-for="NewPermission.PermissionName" class="text-danger d-block mb-3"></span>
           </div>
           
-          <div class="mb-2">
+          <div class="mb-3">
             <label asp-for="NewPermission.Description" class="form-label">รายละเอียด</label>
             <textarea asp-for="NewPermission.Description" 
                       name="NewPermission.Description"
-                      class="form-control d-block mb-2" 
+                      class="form-control" 
                       placeholder="อธิบายรายละเอียดของสิทธิ์นี้"
-                      rows="3"></textarea>
-            <span asp-validation-for="NewPermission.Description" class="text-danger d-block mb-2"></span>
+                      rows="2"></textarea>
+            <span asp-validation-for="NewPermission.Description" class="text-danger d-block"></span>
           </div>
         </div>
         
@@ -280,20 +304,39 @@
         });
     });
 
-    // ช่องค้นหาสิทธิ์
-    document.getElementById("searchInput").addEventListener("input", function () {
-      const filter = this.value.toLowerCase();
+    // ฟังก์ชันกรองข้อมูล
+    function filterTable() {
+      const searchFilter = document.getElementById("searchInput").value.toLowerCase();
+      const appFilter = document.getElementById("filterByApp").value;
       const rows = document.querySelectorAll("#permissionTable tbody tr");
 
       rows.forEach(row => {
-        const permissionName = row.children[1]?.textContent.toLowerCase(); // ชื่อสิทธิ์ อยู่ index 1
-        const appName = row.children[2]?.textContent.toLowerCase(); // แอปพลิเคชัน อยู่ index 2
-        
-        const matchFound = permissionName.includes(filter) || 
-                          appName.includes(filter);
-        
-        row.style.display = matchFound ? "" : "none";
+        const permissionName = row.children[1]?.textContent.toLowerCase() || ""; // ชื่อสิทธิ์
+        const appName = row.children[2]?.textContent.toLowerCase() || ""; // แอปพลิเคชัน
+        const appId = row.querySelector('.edit-btn')?.getAttribute('data-applicationid') || ""; // Application ID
+
+        // ตรวจสอบการค้นหาแบบข้อความ
+        const matchSearch = searchFilter === "" || 
+                           permissionName.includes(searchFilter) || 
+                           appName.includes(searchFilter);
+
+        // ตรวจสอบการกรองตามแอปพลิเคชัน
+        const matchApp = appFilter === "" || appId === appFilter;
+
+        // แสดงเฉพาะแถวที่ตรงเงื่อนไขทั้งสอง
+        row.style.display = (matchSearch && matchApp) ? "" : "none";
       });
+    }
+
+    // Event listeners
+    document.getElementById("searchInput").addEventListener("input", filterTable);
+    document.getElementById("filterByApp").addEventListener("change", filterTable);
+    
+    // ปุ่มรีเซ็ต
+    document.getElementById("resetFilter").addEventListener("click", function() {
+      document.getElementById("searchInput").value = "";
+      document.getElementById("filterByApp").selectedIndex = 0;
+      filterTable();
     });
 
     // Auto-open modals on validation error

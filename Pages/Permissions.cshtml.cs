@@ -20,7 +20,7 @@ namespace MyWebApp.Pages
         public Permission NewPermission { get; set; } = new();
 
         [BindProperty]
-        public Permission? EditPermission { get; set; }
+        public Permission EditPermission { get; set; } = new();
 
         [BindProperty]
         public Guid DeleteId { get; set; }
@@ -121,7 +121,7 @@ namespace MyWebApp.Pages
             NewPermission.CreateDate = DateTime.Now;
             NewPermission.CreateBy = employeeNo ?? "admin";
             
-            // ⭐ เพิ่มค่า UpdateDate และ UpdateBy
+            //เพิ่มค่า UpdateDate และ UpdateBy
             NewPermission.UpdateDate = DateTime.Now;
             NewPermission.UpdateBy = employeeNo ?? "admin";
 
