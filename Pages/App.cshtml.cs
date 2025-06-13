@@ -87,7 +87,7 @@ Applications = (from app in _context.Applications
                 m => m.Telephone
             );
 
-            // ⭐ เพิ่มการตรวจสอบ ApplicationId ว่างหรือเป็น Guid.Empty
+            //เพิ่มการตรวจสอบ ApplicationId ว่างหรือเป็น Guid.Empty
             if (NewApplication.ApplicationId == Guid.Empty)
             {
                 ModelState.AddModelError("NewApplication.ApplicationId", "กรุณากรอกรหัสแอปพลิเคชัน");
@@ -100,7 +100,7 @@ Applications = (from app in _context.Applications
                 return Page();
             }
 
-            // ✅ ตรวจสอบว่า ApplicationId ซ้ำหรือไม่
+            //ตรวจสอบว่า ApplicationId ซ้ำหรือไม่
             var existingApp = await _context.Applications.FindAsync(NewApplication.ApplicationId);
             if (existingApp != null)
             {
@@ -123,7 +123,12 @@ Applications = (from app in _context.Applications
                 {
                     ApplicationAdminId = Guid.NewGuid(),
                     ApplicationId = NewApplication.ApplicationId,  // เก็บเป็น Guid โดยตรง,
-                    EmployeeNo = employeeNo
+                    EmployeeNo = employeeNo,
+                    FullName = employeeNo, // เพิ่ม
+                    CreateDate = DateTime.Now, // เพิ่ม
+                    CreateBy = employeeNo, // เพิ่ม
+                    UpdateDate = DateTime.Now, //  เพิ่ม
+                    UpdateBy = employeeNo //เพิ่ม
                 };
                 _context.ApplicationAdmins.Add(admin);
             }
@@ -134,7 +139,7 @@ Applications = (from app in _context.Applications
             return RedirectToPage();
         }
 
-        // ⭐ เพิ่ม method สำหรับรีเซ็ต NewApplication
+        //เพิ่ม method สำหรับรีเซ็ต NewApplication
         private void ResetNewApplication()
         {
             NewApplication = new Application

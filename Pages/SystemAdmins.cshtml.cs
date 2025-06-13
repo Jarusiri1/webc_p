@@ -46,7 +46,7 @@ namespace MyWebApp.Pages
             NewApplicationAdmin = new ApplicationAdmin
             {
                 ApplicationAdminId = Guid.Empty,
-                ApplicationId = Guid.Empty, // ⭐ เปลี่ยนเป็น Guid.Empty
+                ApplicationId = Guid.Empty, // เปลี่ยนเป็น Guid.Empty
                 EmployeeNo = string.Empty,
                 FullName = string.Empty
             };
@@ -95,7 +95,7 @@ namespace MyWebApp.Pages
                 ModelState.AddModelError("NewApplicationAdmin.EmployeeNo", "กรุณากรอกรหัสพนักงาน");
             }
 
-            // ⭐ ทำให้ FullName เป็น optional
+            // ทำให้ FullName เป็น optional
             // if (string.IsNullOrWhiteSpace(NewApplicationAdmin.FullName))
             // {
             //     ModelState.AddModelError("NewApplicationAdmin.FullName", "กรุณากรอกชื่อ-นามสกุล");

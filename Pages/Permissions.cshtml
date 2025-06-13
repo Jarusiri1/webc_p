@@ -66,7 +66,8 @@
   <colgroup>
     <col style="width: 60px;" />   <!-- ลำดับ -->
     <col />                        <!-- ชื่อสิทธิ์ -->
-    <col style="width: 200px;" />  <!-- แอปพลิเคชัน -->
+    <col style="width: 180px;" />  <!-- แอปพลิเคชัน -->
+    <col style="width: 200px;" />  <!-- รายละเอียด -->
     <col style="width: 120px;" />  <!-- จัดการ -->
   </colgroup>
 
@@ -75,6 +76,7 @@
       <th>ลำดับ</th>
       <th>ชื่อสิทธิ์</th>
       <th>แอปพลิเคชัน</th>
+      <th>รายละเอียด</th>
       <th>จัดการข้อมูล</th>
     </tr>
   </thead>
@@ -85,13 +87,14 @@
       <tr>
         <td>@index</td>
         <td class="text-start" style="max-width: 200px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">@permission.PermissionName</td>
-        <td class="text-start" style="max-width: 200px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <td class="text-start" style="max-width: 180px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           @{
             var app = ViewData["ApplicationList"] as List<MyWebApp.Models.Application>;
             var foundApp = app?.FirstOrDefault(a => a.ApplicationId == permission.ApplicationId);
           }
           @(foundApp?.ApplicationName ?? "ไม่พบแอป")
         </td>
+        <td class="text-start" style="max-width: 200px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">@(permission.Description ?? "-")</td>
         <td>
           <button 
               class="btn btn-sm btn-warning me-1 edit-btn"
@@ -304,7 +307,7 @@
         });
     });
 
-    // ฟังก์ชันกรองข้อมูล
+    // ฟังก์ชันกรองข้อมูل
     function filterTable() {
       const searchFilter = document.getElementById("searchInput").value.toLowerCase();
       const appFilter = document.getElementById("filterByApp").value;
@@ -313,12 +316,14 @@
       rows.forEach(row => {
         const permissionName = row.children[1]?.textContent.toLowerCase() || ""; // ชื่อสิทธิ์
         const appName = row.children[2]?.textContent.toLowerCase() || ""; // แอปพลิเคชัน
+        const description = row.children[3]?.textContent.toLowerCase() || ""; // รายละเอียด
         const appId = row.querySelector('.edit-btn')?.getAttribute('data-applicationid') || ""; // Application ID
 
         // ตรวจสอบการค้นหาแบบข้อความ
         const matchSearch = searchFilter === "" || 
                            permissionName.includes(searchFilter) || 
-                           appName.includes(searchFilter);
+                           appName.includes(searchFilter) ||
+                           description.includes(searchFilter);
 
         // ตรวจสอบการกรองตามแอปพลิเคชัน
         const matchApp = appFilter === "" || appId === appFilter;

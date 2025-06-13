@@ -24,7 +24,7 @@
 </button>
 
 <!-- ช่องค้นหาแบบเล็ก และมินิมอล -->
-<form class="d-flex justify-content-end mb-3" style="max-width: 300px;">
+<form class="d-flex justify-content-start mb-3" style="max-width: 300px;">
   <div class="input-group input-group-sm">
     <input id="searchInput" type="text" class="form-control" placeholder="ค้นหาแอป" />
     <span class="input-group-text">
@@ -38,8 +38,6 @@
   </div>
 </form>
 
-
-
 <table id="appTable" class="table table-striped table-bordered text-center" style="table-layout: fixed; width: 100%;">
 
   <!-- กำหนด colgroup -->
@@ -47,15 +45,17 @@
     <col style="width: 60px;" />   <!-- ลำดับ -->
     <col style="width: 120px;" />  <!-- ID -->
     <col />                        <!-- ชื่อ -->
-    <col style="width: 100px;" /> <!-- สถานะ -->
-    <col style="width: 120px;" /> <!-- จัดการ -->
-</colgroup>
+    <col style="width: 200px;" />  <!-- คำอธิบาย -->
+    <col style="width: 100px;" />  <!-- สถานะ -->
+    <col style="width: 120px;" />  <!-- จัดการ -->
+  </colgroup>
 
     <thead class="table-light">
         <tr>
             <th>ลำดับ</th>
             <th>ID</th>
             <th>ชื่อ</th>
+            <th>คำอธิบาย</th>
             <th>สถานะ</th>
             <th>จัดการข้อมูล</th>
         </tr>
@@ -67,8 +67,8 @@
         <tr>
             <td>@index</td>
             <td style="white-space: nowrap;">@app.ApplicationId.ToString().Substring(0, 10)</td>
-            <td class="text-truncate" style="max-width: 200px;">@app.ApplicationName</td>
-
+            <td class="text-start" style="max-width: 200px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">@app.ApplicationName</td>
+            <td class="text-start" style="max-width: 200px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">@(app.Description ?? "-")</td>
             <td>
                 @if (app.ApplicationStatus == "ใช้งาน")
                 {
@@ -126,15 +126,24 @@
         </div>
 
         <div class="modal-body">
-            <!-- ✅ เพิ่มช่องกรอก ApplicationId -->
+            <!-- ✅ เพิ่มช่องกรอก ApplicationId พร้อมปุ่มสุ่ม -->
             <div class="mb-2">
                 <label asp-for="NewApplication.ApplicationId" class="form-label">รหัสแอปพลิเคชัน</label>
-                <input asp-for="NewApplication.ApplicationId"
-                       class="form-control @(ViewData.ModelState[nameof(Model.NewApplication.ApplicationId)]?.Errors.Count > 0 ? "is-invalid" : "")"
-                       placeholder="เช่น: APP001, SYS001"
-                       required />
+                <div class="input-group">
+                    <input asp-for="NewApplication.ApplicationId"
+                           value=""
+                           class="form-control @(ViewData.ModelState[nameof(Model.NewApplication.ApplicationId)]?.Errors.Count > 0 ? "is-invalid" : "")"
+                           placeholder="กดปุ่มสุ่มเพื่อสร้าง ID"
+                           required />
+                    <button type="button" class="btn btn-outline-secondary" onclick="generateGuid()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/>
+                        </svg>
+                        สุ่ม
+                    </button>
+                </div>
                 <span asp-validation-for="NewApplication.ApplicationId" class="text-danger d-block mb-3"></span>
-                <small class="text-muted">กรุณากรอกรหัสแอปพลิเคชันที่ไม่ซ้ำกัน</small>
+                <small class="text-muted">กดปุ่ม "สุ่ม" เพื่อสร้างรหัสแอปพลิเคชันอัตโนมัติ</small>
             </div>
             
             <div class="mb-2">
@@ -159,7 +168,7 @@
             
             <div class="mb-2">
                 <label asp-for="NewApplication.Description" class="form-label">รายละเอียด</label>
-                <textarea asp-for="NewApplication.Description" class="form-control d-block mb-2" rows="3"></textarea>
+                <textarea asp-for="NewApplication.Description" class="form-control d-block mb-2" rows="2"></textarea>
             </div>
             
             <div class="mb-2">
@@ -216,7 +225,7 @@
             </div>
             <div class="mb-2">
                 <label asp-for="EditApplication.Description" class="form-label"></label>
-                <textarea asp-for="EditApplication.Description" id="Edit_Description" class="form-control"></textarea>
+                <textarea asp-for="EditApplication.Description" id="Edit_Description" class="form-control" rows="2"></textarea>
             </div>
             <div class="mb-2">
                 <label asp-for="EditApplication.ContactName" class="form-label"></label>
@@ -262,6 +271,17 @@
 
 @section Scripts {
   <script>
+    // ฟังก์ชันสุ่ม GUID
+    function generateGuid() {
+      const guid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+      document.querySelector('input[name="NewApplication.ApplicationId"]').value = guid;
+      console.log("Generated GUID:", guid);
+    }
+
     // สร้างฟังก์ชัน delete ให้เป็น global
     function fillDeleteModal(id, appName) {
       console.log("fillDeleteModal called with", id, appName);
@@ -298,36 +318,6 @@
         $form.find('span.field-validation-error, span.text-danger, span.invalid-feedback').empty();
         $form.find('.is-invalid').removeClass('is-invalid');
       });
-
-      // Add (Create) — ใช้ delegated event binding
-      /*$(document).on('submit', '#addForm', function(e) {
-        e.preventDefault();
-        const $form = $(this);
-        $.ajax({
-          url: '@Url.Page("App","Create")',
-          type: 'POST',
-          data: $form.serialize(),
-          success: function(html) {
-            if (html.includes('asp-validation-summary') || html.includes('invalid-feedback')) {
-              console.log("Validation error, reloading modal content");
-              const newContent = $('<div>')
-                .append(html)
-                .find('#addAppModal .modal-content').html();
-              $('#addAppModal .modal-content').html(newContent);
-              $.validator.unobtrusive.parse($('#addAppModal'));
-              addModal.show();
-            } else {
-              console.log("Create success");
-              addModal.hide();
-              window.location.reload();
-            }
-          },
-          error: function(xhr) {
-            console.error("Create error:", xhr.responseText);
-            alert('Error: ' + xhr.responseText);
-          }
-        });
-      });*/
 
       // Click edit button
       $(document).on('click', '.edit-btn', function() {
@@ -378,6 +368,7 @@
           .done(() => {
             console.log("Delete success");
             $('#deleteAppModal').modal('hide');
+            window.location.reload();
           })
           .fail(xhr => {
             console.error("Delete error:", xhr.responseText);
@@ -386,16 +377,18 @@
       });
 
       // ช่องค้นหาชื่อแอป
-document.getElementById("searchInput").addEventListener("input", function () {
-  const filter = this.value.toLowerCase();
-  const rows = document.querySelectorAll("#appTable tbody tr");
+      document.getElementById("searchInput").addEventListener("input", function () {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll("#appTable tbody tr");
 
-  rows.forEach(row => {
-    const appName = row.children[2]?.textContent.toLowerCase(); // คอลัมน์ชื่ออยู่ index 1
-    row.style.display = appName.includes(filter) ? "" : "none";
-  });
-});
-
+        rows.forEach(row => {
+          const appName = row.children[2]?.textContent.toLowerCase(); // ชื่อแอป
+          const description = row.children[3]?.textContent.toLowerCase(); // คำอธิบาย
+          
+          const matchFound = appName.includes(filter) || description.includes(filter);
+          row.style.display = matchFound ? "" : "none";
+        });
+      });
 
       // รีโหลดเมื่อปิด delete modal
       $('#deleteAppModal').on('hidden.bs.modal', function () {
