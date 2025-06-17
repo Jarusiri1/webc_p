@@ -16,6 +16,8 @@ namespace MyWebApp.Data
 
         public DbSet<Application> Applications { get; set; }
         public DbSet<Permission> Permissions { get; set; }
+        public DbSet<UserGroup> UserGroups { get; set; }
+        public DbSet<Group>     Groups     { get; set; }
 
         public override int SaveChanges()
         {

@@ -46,7 +46,7 @@ namespace MyWebApp.Pages
             NewApplicationAdmin = new ApplicationAdmin
             {
                 ApplicationAdminId = Guid.Empty,
-                ApplicationId = Guid.Empty, // เปลี่ยนเป็น Guid.Empty
+                ApplicationId = Guid.Empty,
                 EmployeeNo = string.Empty,
                 FullName = string.Empty
             };
@@ -54,8 +54,23 @@ namespace MyWebApp.Pages
             // ดึงรายการผู้ดูแลระบบทั้งหมด
             ApplicationAdmins = _context.ApplicationAdmins.ToList();
             
-            // ดึงรายการแอปทั้งหมดเพื่อใช้ใน dropdown
-            ViewData["ApplicationList"] = _context.Applications.ToList();
+            // 🔥 ปรับปรุง: ดึงรายการแอปทั้งหมดเพื่อใช้ใน dropdown และ filter
+            // เรียงลำดับตามชื่อและแยกที่ใช้งานกับไม่ใช้งาน
+            var allApplications = _context.Applications
+                .OrderBy(a => a.ApplicationStatus == "ไม่ได้ใช้งาน") // ใช้งานขึ้นก่อน
+                .ThenBy(a => a.ApplicationName) // เรียงตามชื่อ
+                .ToList();
+
+            ViewData["ApplicationList"] = allApplications;
+            
+            // 🔥 เพิ่ม: รายการแอปที่ใช้งานเท่านั้น สำหรับ dropdown เพิ่มข้อมูล
+            ViewData["ActiveApplicationList"] = allApplications
+                .Where(a => a.ApplicationStatus == "ใช้งาน")
+                .ToList();
+
+            // 🔥 เพิ่ม: สถิติข้อมูล
+            ViewData["TotalAdmins"] = ApplicationAdmins.Count;
+            ViewData["TotalApps"] = allApplications.Count(a => a.ApplicationStatus == "ใช้งาน");
         }
 
         public async Task<IActionResult> OnPostCreateAsync()
@@ -65,7 +80,16 @@ namespace MyWebApp.Pages
 
             // โหลดข้อมูลใหม่สำหรับการแสดงผล
             ApplicationAdmins = _context.ApplicationAdmins.ToList();
-            ViewData["ApplicationList"] = _context.Applications.ToList();
+            
+            var allApplications = _context.Applications
+                .OrderBy(a => a.ApplicationStatus == "ไม่ได้ใช้งาน")
+                .ThenBy(a => a.ApplicationName)
+                .ToList();
+                
+            ViewData["ApplicationList"] = allApplications;
+            ViewData["ActiveApplicationList"] = allApplications
+                .Where(a => a.ApplicationStatus == "ใช้งาน")
+                .ToList();
 
             // เคลียร์ ModelState และใช้ TryUpdateModelAsync
             ModelState.Clear();
@@ -94,12 +118,21 @@ namespace MyWebApp.Pages
             {
                 ModelState.AddModelError("NewApplicationAdmin.EmployeeNo", "กรุณากรอกรหัสพนักงาน");
             }
+            else
+            {
+                // 🔥 เพิ่ม: ตรวจสอบรูปแบบรหัสพนักงาน
+                NewApplicationAdmin.EmployeeNo = NewApplicationAdmin.EmployeeNo.Trim();
+                if (NewApplicationAdmin.EmployeeNo.Length < 3)
+                {
+                    ModelState.AddModelError("NewApplicationAdmin.EmployeeNo", "รหัสพนักงานต้องมีอย่างน้อย 3 ตัวอักษร");
+                }
+            }
 
-            // ทำให้ FullName เป็น optional
-            // if (string.IsNullOrWhiteSpace(NewApplicationAdmin.FullName))
-            // {
-            //     ModelState.AddModelError("NewApplicationAdmin.FullName", "กรุณากรอกชื่อ-นามสกุล");
-            // }
+            // 🔥 ปรับปรุง: ทำให้ FullName เป็น optional และ trim
+            if (!string.IsNullOrWhiteSpace(NewApplicationAdmin.FullName))
+            {
+                NewApplicationAdmin.FullName = NewApplicationAdmin.FullName.Trim();
+            }
 
             if (!ModelState.IsValid)
             {
@@ -111,11 +144,18 @@ namespace MyWebApp.Pages
                 return Page();
             }
 
-            // ตรวจสอบว่า Application ID มีอยู่จริงหรือไม่
-            var appExists = _context.Applications.Any(a => a.ApplicationId == NewApplicationAdmin.ApplicationId);
-            if (!appExists)
+            // ตรวจสอบว่า Application ID มีอยู่จริงและใช้งานอยู่หรือไม่
+            var app = _context.Applications.FirstOrDefault(a => a.ApplicationId == NewApplicationAdmin.ApplicationId);
+            if (app == null)
             {
-                ModelState.AddModelError("NewApplicationAdmin.ApplicationId", "ไม่พบ Application ID นี้ในระบบ");
+                ModelState.AddModelError("NewApplicationAdmin.ApplicationId", "ไม่พบแอปพลิเคชันนี้ในระบบ");
+                ViewData["ShowAddModal"] = true;
+                return Page();
+            }
+
+            if (app.ApplicationStatus != "ใช้งาน")
+            {
+                ModelState.AddModelError("NewApplicationAdmin.ApplicationId", "ไม่สามารถเพิ่มผู้ดูแลสำหรับแอปพลิเคชันที่ไม่ได้ใช้งาน");
                 ViewData["ShowAddModal"] = true;
                 return Page();
             }
@@ -123,7 +163,7 @@ namespace MyWebApp.Pages
             // ตรวจสอบว่าผู้ดูแลคนนี้มีอยู่ในแอปนี้แล้วหรือไม่
             var existingAdmin = _context.ApplicationAdmins.Any(a => 
                 a.ApplicationId == NewApplicationAdmin.ApplicationId && 
-                a.EmployeeNo == NewApplicationAdmin.EmployeeNo);
+                a.EmployeeNo.ToLower() == NewApplicationAdmin.EmployeeNo.ToLower());
             if (existingAdmin)
             {
                 ModelState.AddModelError("NewApplicationAdmin.EmployeeNo", "พนักงานคนนี้เป็นผู้ดูแลแอปนี้อยู่แล้ว");
@@ -142,18 +182,41 @@ namespace MyWebApp.Pages
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("ApplicationAdmin created successfully!");
-            return RedirectToPage();
+            
+            // 🔥 แก้ไข: เพิ่ม success message
+            TempData["LoginMessage"] = $"เพิ่มผู้ดูแลระบบ {NewApplicationAdmin.EmployeeNo} สำเร็จ";
+            
+            return RedirectToPage("/SystemAdmins"); // 🔥 แก้ไข: ระบุหน้าอย่างชัดเจน
         }
 
         public async Task<IActionResult> OnPostEditAsync()
         {
             ApplicationAdmins = _context.ApplicationAdmins.ToList();
-            ViewData["ApplicationList"] = _context.Applications.ToList();
+            
+            var allApplications = _context.Applications
+                .OrderBy(a => a.ApplicationStatus == "ไม่ได้ใช้งาน")
+                .ThenBy(a => a.ApplicationName)
+                .ToList();
+                
+            ViewData["ApplicationList"] = allApplications;
+            ViewData["ActiveApplicationList"] = allApplications
+                .Where(a => a.ApplicationStatus == "ใช้งาน")
+                .ToList();
 
             if (EditApplicationAdmin == null || EditApplicationAdmin.ApplicationAdminId == Guid.Empty)
             {
                 ViewData["ShowEditModal"] = true;
                 return Page();
+            }
+
+            // 🔥 เพิ่ม: ตรวจสอบข้อมูล
+            if (!string.IsNullOrWhiteSpace(EditApplicationAdmin.EmployeeNo))
+            {
+                EditApplicationAdmin.EmployeeNo = EditApplicationAdmin.EmployeeNo.Trim();
+            }
+            if (!string.IsNullOrWhiteSpace(EditApplicationAdmin.FullName))
+            {
+                EditApplicationAdmin.FullName = EditApplicationAdmin.FullName.Trim();
             }
 
             if (!ModelState.IsValid)
@@ -165,13 +228,29 @@ namespace MyWebApp.Pages
             var admin = await _context.ApplicationAdmins.FindAsync(EditApplicationAdmin.ApplicationAdminId);
             if (admin == null) return NotFound();
 
+            // 🔥 เพิ่ม: ตรวจสอบการซ้ำของรหัสพนักงาน (ยกเว้นตัวเอง)
+            var duplicateEmployee = _context.ApplicationAdmins.Any(a => 
+                a.ApplicationId == admin.ApplicationId && 
+                a.EmployeeNo.ToLower() == EditApplicationAdmin.EmployeeNo.ToLower() &&
+                a.ApplicationAdminId != EditApplicationAdmin.ApplicationAdminId);
+                
+            if (duplicateEmployee)
+            {
+                ModelState.AddModelError("EditApplicationAdmin.EmployeeNo", "รหัสพนักงานนี้มีอยู่ในแอปพลิเคชันนี้แล้ว");
+                ViewData["ShowEditModal"] = true;
+                return Page();
+            }
+
             admin.EmployeeNo = EditApplicationAdmin.EmployeeNo;
             admin.FullName = EditApplicationAdmin.FullName;
             admin.UpdateDate = DateTime.Now;
             admin.UpdateBy = TempData["EmployeeNo"]?.ToString() ?? "admin";
 
             await _context.SaveChangesAsync();
-            return RedirectToPage();
+            
+            TempData["LoginMessage"] = $"แก้ไขข้อมูลผู้ดูแลระบบ {admin.EmployeeNo} สำเร็จ";
+            
+            return RedirectToPage("/SystemAdmins"); // 🔥 แก้ไข: ระบุหน้าอย่างชัดเจน
         }
 
         public async Task<IActionResult> OnPostDeleteAsync()
@@ -182,10 +261,14 @@ namespace MyWebApp.Pages
             var admin = await _context.ApplicationAdmins.FindAsync(DeleteId);
             if (admin != null)
             {
+                var employeeNo = admin.EmployeeNo;
                 _context.ApplicationAdmins.Remove(admin);
                 await _context.SaveChangesAsync();
+                
+                TempData["LoginMessage"] = $"ลบผู้ดูแลระบบ {employeeNo} สำเร็จ";
             }
-            return RedirectToPage();
+            
+            return RedirectToPage("/SystemAdmins"); // 🔥 แก้ไข: ระบุหน้าอย่างชัดเจน
         }
 
         // เพิ่ม method สำหรับรีเซ็ต NewApplicationAdmin
@@ -194,7 +277,7 @@ namespace MyWebApp.Pages
             NewApplicationAdmin = new ApplicationAdmin
             {
                 ApplicationAdminId = Guid.Empty,
-                ApplicationId = Guid.Empty, // ⭐ เปลี่ยนเป็น Guid.Empty
+                ApplicationId = Guid.Empty,
                 EmployeeNo = string.Empty,
                 FullName = string.Empty
             };

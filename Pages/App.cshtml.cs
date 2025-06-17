@@ -56,12 +56,7 @@ namespace MyWebApp.Pages
 
             try
             {
-                // ใช้การ join แบบนี้แทน:
-Applications = (from app in _context.Applications
-                join admin in _context.ApplicationAdmins
-                on app.ApplicationId equals admin.ApplicationId  // เปรียบเทียบ Guid กับ Guid
-                where admin.EmployeeNo == employeeNo
-                select app).ToList();
+                Applications = _context.Applications.ToList();
             }
             catch (Exception ex)
             {
@@ -114,6 +109,7 @@ Applications = (from app in _context.Applications
             _context.Applications.Add(NewApplication);
 
             // เพิ่ม ApplicationAdmin
+            /*
             var employeeNo = TempData["EmployeeNo"]?.ToString();
             TempData.Keep("EmployeeNo");
 
@@ -132,6 +128,7 @@ Applications = (from app in _context.Applications
                 };
                 _context.ApplicationAdmins.Add(admin);
             }
+            */
 
             await _context.SaveChangesAsync();
             _logger.LogInformation("Create saved successfully: {Id}", NewApplication.ApplicationId);

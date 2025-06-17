@@ -23,12 +23,13 @@
     + เพิ่มผู้ดูแลระบบ
 </button>
 
-<!-- ช่องค้นหา -->
-<div class="d-flex justify-content-start mb-3 gap-2" style="max-width: 400px;">
+<!-- ช่องค้นหาและกรองข้อมูล -->
+<div class="d-flex justify-content-end mb-3 gap-2" style="max-width: 500px;">
   <!-- ช่องค้นหา -->
   <div class="input-group input-group-sm" style="max-width: 250px;">
     <input id="searchInput" type="text" class="form-control" placeholder="ค้นหาผู้ดูแล" />
     <span class="input-group-text">
+      <!-- ไอคอนมินิมอลแบบ SVG -->
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="gray" viewBox="0 0 16 16">
         <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 
         1 0 0 0 1.415-1.415l-3.85-3.85zm-5.242 1.4a5.5 5.5 0 1 1 
@@ -37,8 +38,22 @@
     </span>
   </div>
   
+  <!-- กรองตามแอปพลิเคชัน -->
+  <div class="input-group input-group-sm" style="max-width: 200px;">
+    <select id="filterByApp" class="form-select">
+      <option value="">ทุกแอปพลิเคชัน</option>
+      @if (ViewData["ApplicationList"] is List<MyWebApp.Models.Application> applicationList)
+      {
+        @foreach(var app in applicationList)
+        {
+          <option value="@app.ApplicationId">@app.ApplicationName</option>
+        }
+      }
+    </select>
+  </div>
+  
   <!-- ปุ่มรีเซ็ต -->
-  <button id="resetFilter" class="btn btn-outline-secondary btn-sm" type="button" title="รีเซ็ตการค้นหา">
+  <button id="resetFilter" class="btn btn-outline-secondary btn-sm" type="button" title="รีเซ็ตการกรอง">
     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
       <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
       <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
@@ -72,11 +87,11 @@
       <tr>
         <td>@index</td>
         <td class="text-start" style="max-width: 120px; overflow: hidden; white-space: nowrap;">@admin.EmployeeNo</td>
-        <td class="text-start" style="max-width: 200px; overflow: hidden; white-space: nowrap;">@(admin.FullName ?? admin.EmployeeNo)</td>
-        <td class="text-start" style="max-width: 200px; overflow: hidden; white-space: nowrap;">
+        <td class="text-start" style="max-width: 200px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">@(admin.FullName ?? admin.EmployeeNo)</td>
+        <td class="text-start" style="max-width: 200px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           @{
             var app = ViewData["ApplicationList"] as List<MyWebApp.Models.Application>;
-            var foundApp = app?.FirstOrDefault(a => a.ApplicationId == admin.ApplicationId); // ⭐ เปรียบเทียบ Guid กับ Guid
+            var foundApp = app?.FirstOrDefault(a => a.ApplicationId == admin.ApplicationId);
           }
           @(foundApp?.ApplicationName ?? "ไม่พบแอป")
         </td>
@@ -121,7 +136,7 @@
         <div asp-validation-summary="ModelOnly" class="text-danger mb-1 ms-4 mt-n2"></div>
 
         <div class="modal-body">
-          <div class="mb-3">
+          <div class="mb-2">
             <label asp-for="NewApplicationAdmin.ApplicationId" class="form-label">เลือกแอปพลิเคชัน</label>
             <select asp-for="NewApplicationAdmin.ApplicationId"
                     name="NewApplicationAdmin.ApplicationId"
@@ -139,7 +154,7 @@
             <span asp-validation-for="NewApplicationAdmin.ApplicationId" class="text-danger d-block mb-3"></span>
           </div>
           
-          <div class="mb-3">
+          <div class="mb-2">
             <label asp-for="NewApplicationAdmin.EmployeeNo" class="form-label">รหัสพนักงาน</label>
             <input asp-for="NewApplicationAdmin.EmployeeNo"
                    name="NewApplicationAdmin.EmployeeNo"
@@ -183,13 +198,13 @@
           <input type="hidden" asp-for="EditApplicationAdmin.ApplicationAdminId" id="Edit_ApplicationAdminId" />
           <input type="hidden" asp-for="EditApplicationAdmin.ApplicationId" id="Edit_ApplicationId" />
 
-          <div class="mb-3">
+          <div class="mb-2">
             <label asp-for="EditApplicationAdmin.EmployeeNo" class="form-label">รหัสพนักงาน</label>
             <input asp-for="EditApplicationAdmin.EmployeeNo" id="Edit_EmployeeNo" class="form-control" />
             <span asp-validation-for="EditApplicationAdmin.EmployeeNo" class="invalid-feedback"></span>
           </div>
           
-          <div class="mb-3">
+          <div class="mb-2">
             <label asp-for="EditApplicationAdmin.FullName" class="form-label">ชื่อ-นามสกุล</label>
             <input asp-for="EditApplicationAdmin.FullName" id="Edit_FullName" class="form-control" />
             <span asp-validation-for="EditApplicationAdmin.FullName" class="invalid-feedback"></span>
@@ -284,7 +299,7 @@
         .done(() => {
           console.log("Delete success");
           $('#deleteAdminModal').modal('hide');
-          window.location.reload();
+          window.location.href = '/SystemAdmins';
         })
         .fail(xhr => {
           console.error("Delete error:", xhr.responseText);
@@ -292,31 +307,40 @@
         });
     });
 
-    // ฟังก์ชันค้นหา
+    // ฟังก์ชันกรองข้อมูล
     function filterTable() {
       const searchFilter = document.getElementById("searchInput").value.toLowerCase();
+      const appFilter = document.getElementById("filterByApp").value;
       const rows = document.querySelectorAll("#adminTable tbody tr");
 
       rows.forEach(row => {
-        const employeeNo = row.children[1]?.textContent.toLowerCase() || ""; // รหัส
+        const employeeNo = row.children[1]?.textContent.toLowerCase() || ""; // รหัสพนักงาน
         const fullName = row.children[2]?.textContent.toLowerCase() || ""; // ชื่อ-สกุล
         const appName = row.children[3]?.textContent.toLowerCase() || ""; // แอปพลิเคชัน
+        const appId = row.querySelector('.edit-btn')?.getAttribute('data-applicationid') || ""; // Application ID
 
-        const matchFound = searchFilter === "" || 
-                          employeeNo.includes(searchFilter) || 
-                          fullName.includes(searchFilter) ||
-                          appName.includes(searchFilter);
+        // ตรวจสอบการค้นหาแบบข้อความ
+        const matchSearch = searchFilter === "" || 
+                           employeeNo.includes(searchFilter) || 
+                           fullName.includes(searchFilter) ||
+                           appName.includes(searchFilter);
 
-        row.style.display = matchFound ? "" : "none";
+        // ตรวจสอบการกรองตามแอปพลิเคชัน
+        const matchApp = appFilter === "" || appId === appFilter;
+
+        // แสดงเฉพาะแถวที่ตรงเงื่อนไขทั้งสอง
+        row.style.display = (matchSearch && matchApp) ? "" : "none";
       });
     }
 
     // Event listeners
     document.getElementById("searchInput").addEventListener("input", filterTable);
+    document.getElementById("filterByApp").addEventListener("change", filterTable);
     
     // ปุ่มรีเซ็ต
     document.getElementById("resetFilter").addEventListener("click", function() {
       document.getElementById("searchInput").value = "";
+      document.getElementById("filterByApp").selectedIndex = 0;
       filterTable();
     });
 
