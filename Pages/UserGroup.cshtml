@@ -37,12 +37,12 @@
                 <td>@ug.EmployeeNo</td>
                 <td>
                     <button class="btn btn-sm btn-warning me-1 edit-btn"
-                        data-id="@ug.UserGroupId"
-                        data-empno="@ug.EmployeeNo"
-                        data-groupid="@ug.GroupId">
-                    แก้ไข
+                            data-id="@ug.UserGroupId"
+                            data-empno="@ug.EmployeeNo"
+                            data-groupid="@ug.GroupId">
+                        แก้ไข
                     </button>
-                    <form method="post" asp-page-handler="Delete" asp-route-id="@ug.UserGroupId" style="display:inline">
+                    <form method="post" asp-page-handler="Delete" asp-route-userGroupId="@ug.UserGroupId"style="display:inline">
                         <button type="submit" class="btn btn-sm btn-danger">ลบ</button>
                     </form>
                 </td>
@@ -62,17 +62,19 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
                     <div class="mb-3">
                         <label class="form-label" for="groupSelect">กลุ่ม</label>
                         <select id="groupSelect" asp-for="NewGroup.GroupId" asp-items="Model.GroupSelectList" class="form-select">
                             <option value="">-- เลือกกลุ่ม --</option>
                         </select>
+                        <span asp-validation-for="NewGroup.GroupId" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="employeeNo">Employee No.</label>
-                        <input id="employeeNo" 
-                               asp-for="NewGroup.EmployeeNo" 
-                               class="form-control" 
+                        <input id="employeeNo"
+                               asp-for="NewGroup.EmployeeNo"
+                               class="form-control"
                                type="text"
                                placeholder="กรอกรหัสพนักงาน"
                                maxlength="50"
@@ -89,6 +91,7 @@
     </div>
 </div>
 
+<!-- Edit Modal -->
 <div class="modal fade" id="editGroupModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -99,11 +102,13 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
                     <div class="mb-3">
                         <label class="form-label">กลุ่ม</label>
                         <select asp-for="EditGroup.GroupId" asp-items="Model.GroupSelectList" class="form-select" id="editGroupSelect">
                             <option value="">-- เลือกกลุ่ม --</option>
                         </select>
+                        <span asp-validation-for="EditGroup.GroupId" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Employee No.</label>
@@ -120,47 +125,49 @@
     </div>
 </div>
 
+@if (ViewData["ShowAddModal"] as bool? == true)
+{
+    <script>
+        new bootstrap.Modal(document.getElementById('addGroupModal')).show();
+    </script>
+}
+@if (ViewData["ShowEditModal"] as bool? == true)
+{
+    <script>
+        new bootstrap.Modal(document.getElementById('editGroupModal')).show();
+    </script>
+}
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById('addGroupModal');
-    const employeeInput = document.getElementById('employeeNo');
-    
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 
-// ปุ่มแก้ไข
-document.querySelectorAll('.edit-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-        const id = btn.dataset.id;
-        const empNo = btn.dataset.empno;
-        const groupId = btn.dataset.groupid;
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const employeeInput = document.getElementById('employeeNo');
+            const addModal = document.getElementById('addGroupModal');
+            const editModal = document.getElementById('editGroupModal');
 
-        document.getElementById('editUserGroupId').value = id;
-        document.getElementById('editEmployeeNo').value = empNo;
-        document.getElementById('editGroupSelect').value = groupId;
+            // ปุ่มแก้ไข
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const id = btn.dataset.id;
+                    const empNo = btn.dataset.empno;
+                    const groupId = btn.dataset.groupid;
 
-        const modal = new bootstrap.Modal(document.getElementById('editGroupModal'));
-        modal.show();
-    });
-});
+                    document.getElementById('editUserGroupId').value = id;
+                    document.getElementById('editEmployeeNo').value = empNo;
+                    document.getElementById('editGroupSelect').value = groupId;
 
-    // เมื่อ modal เปิด
-    modal.addEventListener('shown.bs.modal', function() {
-        // รีเซ็ตฟอร์ม
-        employeeInput.value = '';
-        // โฟกัสที่ input
-        setTimeout(() => {
-            employeeInput.focus();
-            employeeInput.click();
-        }, 100);
-    });
-    
-    // ทดสอบ input
-    employeeInput.addEventListener('keypress', function(e) {
-        console.log('Key pressed:', e.key);
-    });
-    
-    employeeInput.addEventListener('input', function(e) {
-        console.log('Input value:', e.target.value);
-    });
-});
-</script>
+                    const modal = new bootstrap.Modal(editModal);
+                    modal.show();
+                });
+            });
+
+            // reset input เมื่อเปิด Add Modal
+            addModal.addEventListener('show.bs.modal', function () {
+                employeeInput.value = '';
+                document.getElementById('groupSelect').value = '';
+            });
+        });
+    </script>
+}

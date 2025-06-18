@@ -10,13 +10,13 @@ namespace MyWebApp.Models
         [Key]
         public Guid UserGroupId { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "กรุณาเลือกกลุ่ม")]
         public Guid GroupId { get; set; }
-
-        [Required]
-        [StringLength(50)]
+        
+        [Required(ErrorMessage = "กรุณากรอกรหัสพนักงาน")]
+        [StringLength(50, ErrorMessage = "รหัสพนักงานต้องไม่เกิน 50 ตัวอักษร")]
         public string EmployeeNo { get; set; } = string.Empty;
-
-        public Group? Group { get; set; }
+        
+        public virtual Group? Group { get; set; }
     }
 }
