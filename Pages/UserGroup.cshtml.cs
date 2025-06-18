@@ -23,17 +23,40 @@ namespace MyWebApp.Pages
         public void OnGet() => LoadData();
 
         public IActionResult OnPostAdd()
-        {
-            if (!ModelState.IsValid)
-            {
-                LoadData();
-                return Page();
-            }
+{
+    if (!ModelState.IsValid)
+    {
+        LoadData();
+        return Page();
+    }
 
-            _context.UserGroups.Add(NewGroup);
-            _context.SaveChanges();
-            return RedirectToPage();
-        }
+    var employeeNo = NewGroup.EmployeeNo.Trim();
+    var groupId = NewGroup.GroupId;
+
+    // ตรวจสอบซ้ำ ไม่ให้เพิ่มซ้ำ
+    var exists = _context.UserGroups.Any(ug => ug.EmployeeNo == employeeNo && ug.GroupId == groupId);
+    if (exists)
+    {
+        ModelState.AddModelError("NewGroup.EmployeeNo", "ผู้ใช้งานนี้อยู่ในกลุ่มนี้แล้ว");
+        LoadData();
+        ViewData["ShowAddModal"] = true;
+        return Page();
+    }
+
+    // ✅ เพิ่มให้ครบทุก field ที่ต้องมี
+    var userGroup = new UserGroup
+    {
+        UserGroupId = Guid.NewGuid(),
+        EmployeeNo = employeeNo,
+        GroupId = groupId
+    };
+
+    _context.UserGroups.Add(userGroup);
+    _context.SaveChanges();
+
+    return RedirectToPage();
+}
+
 
         public IActionResult OnPostDelete(Guid id)
         {

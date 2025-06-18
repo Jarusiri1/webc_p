@@ -1,0 +1,373 @@
+@page
+@model MyWebApp.Pages.GroupModel
+@{
+    ViewData["Title"] = "จัดกลุ่มผู้ใช้งาน";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<h2>กลุ่มผู้ใช้งาน</h2>
+
+<!-- ปุ่มเพิ่มกลุ่มผู้ใช้งาน -->
+<button 
+    class="btn btn-success mb-3 float-end" 
+    data-bs-toggle="modal" 
+    data-bs-target="#addGroupModal">
+    + เพิ่มกลุ่มผู้ใช้งาน
+</button>
+
+<!-- Dropdown เลือกแอปพลิเคชัน และช่องค้นหา -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <form method="get" class="d-flex">
+            <select name="applicationId" class="form-select me-2" onchange="this.form.submit()">
+                <option value="">-- ทุกแอปพลิเคชัน --</option>
+                @foreach (var app in Model.Applications)
+                {
+                    @if (Model.SelectedApplicationId == app.ApplicationId)
+                    {
+                        <option value="@app.ApplicationId" selected>@app.ApplicationName</option>
+                    }
+                    else
+                    {
+                        <option value="@app.ApplicationId">@app.ApplicationName</option>
+                    }
+                }
+            </select>
+        </form>
+    </div>
+    <div class="col-md-4">
+        <div class="input-group input-group-sm">
+            <input id="searchInput" type="text" class="form-control" placeholder="ค้นหากลุ่ม" />
+            <span class="input-group-text">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="gray" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 
+                    1 0 0 0 1.415-1.415l-3.85-3.85zm-5.242 1.4a5.5 5.5 0 1 1 
+                    0-11 5.5 5.5 0 0 1 0 11z"/>
+                </svg>
+            </span>
+        </div>
+    </div>
+</div>
+
+<table id="groupTable" class="table table-striped table-bordered text-center" style="table-layout: fixed; width: 100%;">
+    <colgroup>
+        <col style="width: 60px;" />   <!-- ลำดับ -->
+        <col />                        <!-- ชื่อกลุ่ม -->
+        <col style="width: 200px;" />  <!-- แอปพลิเคชัน -->
+        <col style="width: 250px;" />  <!-- คำอธิบาย -->
+        <col style="width: 120px;" />  <!-- จัดการ -->
+    </colgroup>
+
+    <thead class="table-light">
+        <tr>
+            <th>ลำดับ</th>
+            <th>ชื่อกลุ่ม</th>
+            <th>แอปพลิเคชัน</th>
+            <th>คำอธิบาย</th>
+            <th>จัดการข้อมูล</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{ int index = 1; }
+        @foreach (var group in Model.Groups)
+        {
+            <tr>
+                <td>@index</td>
+                <td class="text-start" style="max-width: 200px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+                    @group.GroupName
+                </td>
+                <td class="text-start" style="max-width: 200px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+                    @(group.Application?.ApplicationName ?? "-")
+                </td>
+                <td class="text-start" style="max-width: 250px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+                    @(group.Description ?? "-")
+                </td>
+                <td>
+                    <button 
+    type="button"
+    class="btn btn-sm btn-warning me-1 edit-btn"
+    data-id="@group.GroupId"
+    data-groupname="@group.GroupName"
+    data-applicationid="@group.ApplicationId"
+    data-description="@group.Description">
+    แก้ไข
+</button>
+
+                    <button 
+    type="button"
+    class="btn btn-sm btn-danger" 
+    onclick="fillDeleteModal('@group.GroupId', '@group.GroupName')">
+    ลบ
+</button>
+
+                </td>
+            </tr>
+            index++;
+        }
+    </tbody>
+</table>
+
+<!-- Modal: เพิ่มกลุ่ม -->
+<div class="modal fade" id="addGroupModal" tabindex="-1" aria-labelledby="addGroupModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-light">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="addGroupModalLabel">เพิ่มกลุ่มผู้ใช้งาน</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addGroupForm"
+      method="post"
+      asp-page-handler="Create"
+      asp-antiforgery="true">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-1 ms-4 mt-n2"></div>
+
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label asp-for="NewGroup.ApplicationId" class="form-label">แอปพลิเคชัน</label>
+                        <select asp-for="NewGroup.ApplicationId" 
+                                class="form-select @(ViewData.ModelState[nameof(Model.NewGroup.ApplicationId)]?.Errors.Count > 0 ? "is-invalid" : "")"
+                                required>
+                            <option value="">-- เลือกแอปพลิเคชัน --</option>
+                            @foreach (var app in Model.Applications)
+                            {
+                                <option value="@app.ApplicationId">@app.ApplicationName</option>
+                            }
+                        </select>
+                        <span asp-validation-for="NewGroup.ApplicationId" class="text-danger d-block mb-3"></span>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <label asp-for="NewGroup.GroupName" class="form-label">ชื่อกลุ่ม</label>
+                        <input asp-for="NewGroup.GroupName"
+       class="form-control @(ViewData.ModelState["NewGroup.GroupName"]?.Errors.Count > 0 ? "is-invalid" : "")"
+       required />
+<span asp-validation-for="NewGroup.GroupName" class="text-danger d-block mb-3"></span>
+</div>
+                    
+                    <div class="mb-2">
+                        <label asp-for="NewGroup.Description" class="form-label">คำอธิบาย</label>
+                        <textarea asp-for="NewGroup.Description" class="form-control d-block mb-2" rows="3"></textarea>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">บันทึก</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">ยกเลิก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: แก้ไขกลุ่ม -->
+<!-- Modal: แก้ไขกลุ่ม -->
+<div class="modal fade" id="editGroupModal" tabindex="-1" aria-labelledby="editGroupModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered"> <!-- <<< ทำให้ popup กลางจอ -->
+        <div class="modal-content bg-light">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="editGroupModalLabel">แก้ไขกลุ่มผู้ใช้งาน</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editGroupForm" method="post" asp-page-handler="Edit">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="EditGroup.GroupId" id="Edit_GroupId" />
+                
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label">แอปพลิเคชัน</label>
+                        <select name="EditGroup.ApplicationId" id="Edit_ApplicationId" class="form-select">
+                            <option value="">-- เลือกแอปพลิเคชัน --</option>
+                            @foreach (var app in Model.Applications)
+                            {
+                                <option value="@app.ApplicationId">@app.ApplicationName</option>
+                            }
+                        </select>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <label class="form-label">ชื่อกลุ่ม</label>
+                        <input name="EditGroup.GroupName" id="Edit_GroupName" class="form-control" />
+                    </div>
+                    
+                    <div class="mb-2">
+                        <label class="form-label">คำอธิบาย</label>
+                        <textarea name="EditGroup.Description" id="Edit_Description" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-warning">บันทึก</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: ลบกลุ่ม -->
+<div class="modal fade" id="deleteGroupModal" tabindex="-1" aria-labelledby="deleteGroupModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-light">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">ยืนยันการลบ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="deleteGroupForm" method="post" asp-page-handler="Delete">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="handler" value="Delete" />
+                <input type="hidden" name="DeleteId" id="DeleteId" />
+                <div class="modal-body">
+                    <p>คุณแน่ใจหรือไม่ว่าต้องการลบกลุ่ม: <strong id="Delete_GroupName"></strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">ลบ</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        // สร้างฟังก์ชัน delete ให้เป็น global
+        function fillDeleteModal(id, groupName) {
+    console.log("fillDeleteModal called with", id, groupName);
+    $('#Delete_GroupName').text(groupName);
+    $('#DeleteId').val(id.toString());
+
+    const deleteModalEl = document.getElementById('deleteGroupModal');
+    const deleteModal = new bootstrap.Modal(deleteModalEl);
+    deleteModal.show();
+}
+
+        window.fillDeleteModal = fillDeleteModal;
+
+        $(function() {
+            const addModal = new bootstrap.Modal($('#addGroupModal')[0]);
+            const editModal = new bootstrap.Modal($('#editGroupModal')[0]);
+
+            // เคลียร์ฟอร์มเมื่อปิด add modal
+            $('#addGroupModal').on('hidden.bs.modal', function () {
+                const $form = $(this).find('form');
+                $form[0].reset();
+                $form.find('input, select, textarea').val('');
+                $form.find('span.field-validation-error, span.text-danger, span.invalid-feedback').empty();
+                $form.find('.is-invalid').removeClass('is-invalid');
+                $form.find('[asp-validation-summary] ul').empty();
+            });
+
+            // เคลียร์ฟอร์มเมื่อปิด edit modal
+            $('#editGroupModal').on('hidden.bs.modal', function () {
+                const $form = $(this).find('form');
+                $form[0].reset();
+                $form.find('span.field-validation-error, span.text-danger, span.invalid-feedback').empty();
+                $form.find('.is-invalid').removeClass('is-invalid');
+            });
+
+            // Submit add form (เพิ่มส่วนนี้)
+$(document).on('submit', '#addGroupForm', function(e) {
+     
+});
+
+            // Click edit button
+            $(document).on('click', '.edit-btn', function () {
+    const btn = $(this);
+    $('#Edit_GroupId').val(btn.data('id'));
+    $('#Edit_GroupName').val(btn.data('groupname'));
+    $('#Edit_ApplicationId').val(btn.data('applicationid'));
+    $('#Edit_Description').val(btn.data('description'));
+
+    const editModalEl = document.getElementById('editGroupModal');
+    const editModal = new bootstrap.Modal(editModalEl);
+    editModal.show();
+});
+
+
+            // Submit edit form
+            $(document).on('submit', '#editGroupForm', function(e) {
+                e.preventDefault();
+                const $form = $(this);
+                $.ajax({
+                    url: $form.attr('action') || '@Url.Page("Group","Edit")',
+                    type: 'POST',
+                    data: $form.serialize(),
+                    success: function() {
+                        console.log("Edit success");
+                        editModal.hide();
+                        window.location.reload();
+                    },
+                    error: function(xhr) {
+                        console.error("Edit error:", xhr.status, xhr.responseText);
+                        if (xhr.responseText.includes('asp-validation-summary') || xhr.responseText.includes('invalid-feedback')) {
+                            const newContent = $('<div>')
+                                .append(xhr.responseText)
+                                .find('#editGroupModal .modal-content').html();
+                            $('#editGroupModal .modal-content').html(newContent);
+                            editModal.show();
+                        } else {
+                            alert("Error: " + xhr.responseText);
+                        }
+                    }
+                });
+            });
+
+            // Submit delete form
+            $(document).on('submit', '#deleteGroupForm', function(e) {
+                e.preventDefault();
+                $.post($(this).attr('action'), $(this).serialize())
+                    .done(() => {
+                        console.log("Delete success");
+                        $('#deleteGroupModal').modal('hide');
+                        window.location.reload();
+                    })
+                    .fail(xhr => {
+                        console.error("Delete error:", xhr.responseText);
+                        alert('Error: ' + xhr.responseText);
+                    });
+            });
+
+            // ช่องค้นหา
+            document.getElementById("searchInput").addEventListener("input", function () {
+                const filter = this.value.toLowerCase();
+                const rows = document.querySelectorAll("#groupTable tbody tr");
+
+                rows.forEach(row => {
+                    const groupName = row.children[1]?.textContent.toLowerCase();
+                    const appName = row.children[2]?.textContent.toLowerCase();
+                    const description = row.children[3]?.textContent.toLowerCase();
+                    
+                    const matchFound = groupName.includes(filter) || 
+                                      appName.includes(filter) || 
+                                      description.includes(filter);
+                    row.style.display = matchFound ? "" : "none";
+                });
+            });
+
+            // Auto-open modals on validation error
+            @if ((bool?)(ViewData["ShowAddModal"]) == true) {
+                <text>
+                    console.log("Validation error on Create, showing addModal");
+                    addModal.show();
+                </text>
+            }
+            @if ((bool?)(ViewData["ShowEditModal"]) == true) {
+                <text>
+                    console.log("Validation error on Edit, showing editModal");
+                    editModal.show();
+                </text>
+            }
+        });
+    </script>
+}
