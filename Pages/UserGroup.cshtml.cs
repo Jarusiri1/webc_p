@@ -16,6 +16,10 @@ namespace MyWebApp.Pages
         [BindProperty]
         public UserGroup NewGroup { get; set; } = new();
 
+        [BindProperty]
+public UserGroup EditGroup { get; set; } = new();
+
+
         public IList<UserGroup> UserGroups { get; set; } = default!;
         
         public SelectList GroupSelectList { get; set; } = default!;
@@ -56,6 +60,28 @@ namespace MyWebApp.Pages
 
     return RedirectToPage();
 }
+
+public IActionResult OnPostEdit()
+{
+    if (!ModelState.IsValid)
+    {
+        LoadData();
+        ViewData["ShowEditModal"] = true;
+        return Page();
+    }
+
+    var entity = _context.UserGroups.FirstOrDefault(ug => ug.UserGroupId == EditGroup.UserGroupId);
+    if (entity != null)
+    {
+        entity.EmployeeNo = EditGroup.EmployeeNo.Trim();
+        entity.GroupId = EditGroup.GroupId;
+
+        _context.SaveChanges();
+    }
+
+    return RedirectToPage();
+}
+
 
 
         public IActionResult OnPostDelete(Guid id)

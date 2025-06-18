@@ -36,6 +36,12 @@
                 <td>@ug.Group?.GroupName</td>
                 <td>@ug.EmployeeNo</td>
                 <td>
+                    <button class="btn btn-sm btn-warning me-1 edit-btn"
+                        data-id="@ug.UserGroupId"
+                        data-empno="@ug.EmployeeNo"
+                        data-groupid="@ug.GroupId">
+                    แก้ไข
+                    </button>
                     <form method="post" asp-page-handler="Delete" asp-route-id="@ug.UserGroupId" style="display:inline">
                         <button type="submit" class="btn btn-sm btn-danger">ลบ</button>
                     </form>
@@ -83,11 +89,60 @@
     </div>
 </div>
 
+<div class="modal fade" id="editGroupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="Edit">
+                <input type="hidden" asp-for="EditGroup.UserGroupId" id="editUserGroupId" />
+                <div class="modal-header">
+                    <h5 class="modal-title">แก้ไขผู้ใช้งานในกลุ่ม</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">กลุ่ม</label>
+                        <select asp-for="EditGroup.GroupId" asp-items="Model.GroupSelectList" class="form-select" id="editGroupSelect">
+                            <option value="">-- เลือกกลุ่ม --</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Employee No.</label>
+                        <input asp-for="EditGroup.EmployeeNo" class="form-control" id="editEmployeeNo" />
+                        <span asp-validation-for="EditGroup.EmployeeNo" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="submit" class="btn btn-warning">บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('addGroupModal');
     const employeeInput = document.getElementById('employeeNo');
     
+
+// ปุ่มแก้ไข
+document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const id = btn.dataset.id;
+        const empNo = btn.dataset.empno;
+        const groupId = btn.dataset.groupid;
+
+        document.getElementById('editUserGroupId').value = id;
+        document.getElementById('editEmployeeNo').value = empNo;
+        document.getElementById('editGroupSelect').value = groupId;
+
+        const modal = new bootstrap.Modal(document.getElementById('editGroupModal'));
+        modal.show();
+    });
+});
+
     // เมื่อ modal เปิด
     modal.addEventListener('shown.bs.modal', function() {
         // รีเซ็ตฟอร์ม
