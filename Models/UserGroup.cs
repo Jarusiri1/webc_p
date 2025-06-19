@@ -17,6 +17,10 @@ namespace MyWebApp.Models
         [StringLength(50, ErrorMessage = "รหัสพนักงานต้องไม่เกิน 50 ตัวอักษร")]
         public string EmployeeNo { get; set; } = string.Empty;
         
+[Required(ErrorMessage = "กรุณากรอกชื่อ-นามสกุล")]
+[StringLength(100)]
+public string FullName { get; set; } = string.Empty;
+
         public virtual Group? Group { get; set; }
     }
 }

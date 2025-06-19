@@ -35,10 +35,24 @@ namespace MyWebApp.Pages
         [BindProperty]
         public Guid DeleteId { get; set; }
 
-        public async Task OnGetAsync()
-        {
-            await LoadDataAsync();
-        }
+        public async Task OnGetAsync(Guid? groupId = null)
+{
+    await LoadDataAsync(groupId);
+}
+
+private async Task LoadDataAsync(Guid? groupId = null)
+{
+    GroupSelectList = new SelectList(await _context.Groups.ToListAsync(), "GroupId", "GroupName");
+
+    var query = _context.UserGroups.Include(ug => ug.Group).AsQueryable();
+
+    if (groupId.HasValue)
+    {
+        query = query.Where(ug => ug.GroupId == groupId);
+    }
+
+    UserGroups = await query.OrderBy(ug => ug.Group!.GroupName).ToListAsync();
+}
 
         private async Task LoadDataAsync()
         {
@@ -58,7 +72,8 @@ namespace MyWebApp.Pages
                 NewGroup,
                 "NewGroup",
                 m => m.EmployeeNo,
-                m => m.GroupId
+                m => m.GroupId,
+                 m => m.FullName
             );
 
             if (string.IsNullOrWhiteSpace(NewGroup.EmployeeNo))
@@ -111,7 +126,8 @@ namespace MyWebApp.Pages
                 EditGroup,
                 "EditGroup",
                 m => m.EmployeeNo,
-                m => m.GroupId
+                m => m.GroupId,
+                 m => m.FullName
             );
 
             if (string.IsNullOrWhiteSpace(EditGroup.EmployeeNo))
@@ -143,6 +159,7 @@ namespace MyWebApp.Pages
 
             entity.EmployeeNo = EditGroup.EmployeeNo.Trim();
             entity.GroupId = EditGroup.GroupId;
+            entity.FullName = EditGroup.FullName;
 
             await _context.SaveChangesAsync();
             _logger.LogInformation("Edited UserGroup: {id}", entity.UserGroupId);
