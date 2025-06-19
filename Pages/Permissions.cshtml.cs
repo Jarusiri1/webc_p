@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using MyWebApp.Data;
 using MyWebApp.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MyWebApp.Pages
 {
@@ -29,15 +30,16 @@ namespace MyWebApp.Pages
 
         public void OnGet()
         {
-            if (TempData["EmployeeNo"] == null)
+            var employeeNo = HttpContext.Session.GetString("EmployeeNo");
+            if (string.IsNullOrEmpty(employeeNo))
             {
                 Response.Redirect("/Login");
                 return;
             }
 
-            TempData.Keep("EmployeeNo");
+            LoggedEmployeeNo = employeeNo;
 
-            //เพิ่มการรีเซ็ต NewPermission
+            // Reset ฟอร์มเพิ่มสิทธิ์
             NewPermission = new Permission
             {
                 PermissionId = Guid.Empty,
@@ -46,24 +48,28 @@ namespace MyWebApp.Pages
                 Description = string.Empty
             };
 
-            // ดึงรายการสิทธิทั้งหมด
-            Permissions = _context.Permissions.ToList();
-            
-            // ดึงรายการแอปทั้งหมดเพื่อใช้ใน dropdown
+            // แสดงเฉพาะสิทธิ์ที่ user คนนี้สร้างเท่านั้น
+            Permissions = _context.Permissions
+                .Where(p => p.CreateBy == employeeNo)
+                .ToList();
+
             ViewData["ApplicationList"] = _context.Applications.ToList();
         }
 
         public async Task<IActionResult> OnPostCreateAsync()
         {
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
-            var employeeNo = TempData["EmployeeNo"]?.ToString();
-            TempData.Keep("EmployeeNo");
+            var employeeNo = HttpContext.Session.GetString("EmployeeNo");
+            if (string.IsNullOrEmpty(employeeNo))
+                return RedirectToPage("/Login");
 
-            // โหลดข้อมูลใหม่สำหรับการแสดงผล
-            Permissions = _context.Permissions.ToList();
+            // โหลดรายการสิทธิ์เฉพาะของ user นี้
+            Permissions = _context.Permissions
+                .Where(p => p.CreateBy == employeeNo)
+                .ToList();
+
             ViewData["ApplicationList"] = _context.Applications.ToList();
 
-            //เคลียร์ ModelState และใช้ TryUpdateModelAsync
+            // Validate ข้อมูล
             ModelState.Clear();
             await TryUpdateModelAsync(
                 NewPermission,
@@ -73,41 +79,18 @@ namespace MyWebApp.Pages
                 m => m.Description
             );
 
-            // Debug log
-            Console.WriteLine("==== [DEBUG] POST: Create Permission ====");
-            Console.WriteLine("ApplicationId: " + NewPermission.ApplicationId);
-            Console.WriteLine("PermissionName: " + (NewPermission.PermissionName ?? "null"));
-            Console.WriteLine("Description: " + (NewPermission.Description ?? "null"));
-            Console.WriteLine("ModelState.IsValid: " + ModelState.IsValid);
-
-            Console.WriteLine("==== [DEBUG] FORM CONTENT ====");
-            foreach (var key in Request.Form.Keys)
-            {
-                Console.WriteLine($"[FORM] {key} = {Request.Form[key]}");
-            }
-
-            //เพิ่มการตรวจสอบเฉพาะสิ่งที่จำเป็น
             if (NewPermission.ApplicationId == Guid.Empty)
-            {
                 ModelState.AddModelError("NewPermission.ApplicationId", "กรุณาเลือกแอปพลิเคชัน");
-            }
 
             if (string.IsNullOrWhiteSpace(NewPermission.PermissionName))
-            {
                 ModelState.AddModelError("NewPermission.PermissionName", "กรุณากรอกชื่อสิทธิ์");
-            }
 
             if (!ModelState.IsValid)
             {
-                foreach (var state in ModelState)
-                    foreach (var error in state.Value.Errors)
-                        Console.WriteLine($"[VALIDATION ERROR] {state.Key}: {error.ErrorMessage}");
-
                 ViewData["ShowAddModal"] = true;
                 return Page();
             }
 
-            // ตรวจสอบว่า Application ID มีอยู่จริงหรือไม่
             bool appExists = _context.Applications.Any(a => a.ApplicationId == NewPermission.ApplicationId);
             if (!appExists)
             {
@@ -116,25 +99,28 @@ namespace MyWebApp.Pages
                 return Page();
             }
 
-            // สร้างข้อมูลใหม่
             NewPermission.PermissionId = Guid.NewGuid();
             NewPermission.CreateDate = DateTime.Now;
-            NewPermission.CreateBy = employeeNo ?? "admin";
-            
-            //เพิ่มค่า UpdateDate และ UpdateBy
+            NewPermission.CreateBy = employeeNo;
             NewPermission.UpdateDate = DateTime.Now;
-            NewPermission.UpdateBy = employeeNo ?? "admin";
+            NewPermission.UpdateBy = employeeNo;
 
             _context.Permissions.Add(NewPermission);
             await _context.SaveChangesAsync();
 
-            Console.WriteLine("Permission created successfully!");
             return RedirectToPage();
         }
 
         public async Task<IActionResult> OnPostEditAsync()
         {
-            Permissions = _context.Permissions.ToList();
+            var employeeNo = HttpContext.Session.GetString("EmployeeNo");
+            if (string.IsNullOrEmpty(employeeNo))
+                return RedirectToPage("/Login");
+
+            Permissions = _context.Permissions
+                .Where(p => p.CreateBy == employeeNo)
+                .ToList();
+
             ViewData["ApplicationList"] = _context.Applications.ToList();
 
             if (EditPermission == null || EditPermission.PermissionId == Guid.Empty)
@@ -149,11 +135,17 @@ namespace MyWebApp.Pages
                 return Page();
             }
 
-            var p = await _context.Permissions.FindAsync(EditPermission.PermissionId);
+            // ดึงเฉพาะสิทธิ์ที่เจ้าตัวเป็นคนสร้าง
+            var p = await _context.Permissions.FirstOrDefaultAsync(p =>
+                p.PermissionId == EditPermission.PermissionId &&
+                p.CreateBy == employeeNo);
+
             if (p == null) return NotFound();
 
             p.PermissionName = EditPermission.PermissionName;
             p.Description = EditPermission.Description;
+            p.UpdateDate = DateTime.Now;
+            p.UpdateBy = employeeNo;
 
             await _context.SaveChangesAsync();
             return RedirectToPage();
@@ -161,19 +153,26 @@ namespace MyWebApp.Pages
 
         public async Task<IActionResult> OnPostDeleteAsync()
         {
+            var employeeNo = HttpContext.Session.GetString("EmployeeNo");
+            if (string.IsNullOrEmpty(employeeNo))
+                return RedirectToPage("/Login");
+
             if (DeleteId == Guid.Empty)
                 return BadRequest();
 
-            var perm = await _context.Permissions.FindAsync(DeleteId);
+            // ดึงเฉพาะสิทธิ์ของพนักงานนั้นเพื่อป้องกันลบข้ามคน
+            var perm = await _context.Permissions.FirstOrDefaultAsync(p =>
+                p.PermissionId == DeleteId && p.CreateBy == employeeNo);
+
             if (perm != null)
             {
                 _context.Permissions.Remove(perm);
                 await _context.SaveChangesAsync();
             }
+
             return RedirectToPage();
         }
 
-        //เพิ่ม method สำหรับรีเซ็ต NewPermission
         private void ResetNewPermission()
         {
             NewPermission = new Permission

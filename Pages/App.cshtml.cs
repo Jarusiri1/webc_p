@@ -34,41 +34,36 @@ namespace MyWebApp.Pages
 
         public void OnGet()
         {
-            if (TempData["EmployeeNo"] == null)
+            var employeeNo = HttpContext.Session.GetString("EmployeeNo");
+            if (string.IsNullOrEmpty(employeeNo))
             {
                 Response.Redirect("/Login");
                 return;
             }
 
-            var employeeNo = TempData["EmployeeNo"]?.ToString();
-            TempData.Keep("EmployeeNo");
+            Applications = _context.Applications
+                .Where(a => a.CreateBy == employeeNo)
+                .ToList();
 
-            // ⭐ เพิ่มส่วนนี้ - สร้าง NewApplication ใหม่ที่มีค่าว่าง
             NewApplication = new Application
             {
-                ApplicationId = Guid.Empty, // หรือใช้ default(Guid)
+                ApplicationId = Guid.Empty,
                 ApplicationName = string.Empty,
                 ApplicationStatus = string.Empty,
                 Description = string.Empty,
                 ContactName = string.Empty,
                 Telephone = string.Empty
             };
-
-            try
-            {
-                Applications = _context.Applications.ToList();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error loading applications for EmployeeNo={EmployeeNo}", employeeNo);
-                throw;
-            }
         }
 
         public async Task<IActionResult> OnPostCreateAsync()
         {
-            _logger.LogInformation("OnPostCreateAsync start");
-            Applications = _context.Applications.ToList();
+            var employeeNo = HttpContext.Session.GetString("EmployeeNo");
+
+            if (string.IsNullOrEmpty(employeeNo))
+            {
+                return RedirectToPage("/Login");
+            }
 
             ModelState.Clear();
             await TryUpdateModelAsync(
@@ -82,7 +77,6 @@ namespace MyWebApp.Pages
                 m => m.Telephone
             );
 
-            //เพิ่มการตรวจสอบ ApplicationId ว่างหรือเป็น Guid.Empty
             if (NewApplication.ApplicationId == Guid.Empty)
             {
                 ModelState.AddModelError("NewApplication.ApplicationId", "กรุณากรอกรหัสแอปพลิเคชัน");
@@ -90,12 +84,10 @@ namespace MyWebApp.Pages
 
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Create validation failed: {Errors}", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
                 ViewData["ShowAddModal"] = true;
                 return Page();
             }
 
-            //ตรวจสอบว่า ApplicationId ซ้ำหรือไม่
             var existingApp = await _context.Applications.FindAsync(NewApplication.ApplicationId);
             if (existingApp != null)
             {
@@ -104,39 +96,27 @@ namespace MyWebApp.Pages
                 return Page();
             }
 
-            NewApplication.CreateBy = "System";
+            NewApplication.CreateBy = employeeNo;
             NewApplication.CreatedDate = DateTime.Now;
             _context.Applications.Add(NewApplication);
 
-            // เพิ่ม ApplicationAdmin
-            /*
-            var employeeNo = TempData["EmployeeNo"]?.ToString();
-            TempData.Keep("EmployeeNo");
-
-            if (!string.IsNullOrEmpty(employeeNo))
+            var admin = new ApplicationAdmin
             {
-                var admin = new ApplicationAdmin
-                {
-                    ApplicationAdminId = Guid.NewGuid(),
-                    ApplicationId = NewApplication.ApplicationId,  // เก็บเป็น Guid โดยตรง,
-                    EmployeeNo = employeeNo,
-                    FullName = employeeNo, // เพิ่ม
-                    CreateDate = DateTime.Now, // เพิ่ม
-                    CreateBy = employeeNo, // เพิ่ม
-                    UpdateDate = DateTime.Now, //  เพิ่ม
-                    UpdateBy = employeeNo //เพิ่ม
-                };
-                _context.ApplicationAdmins.Add(admin);
-            }
-            */
+                ApplicationAdminId = Guid.NewGuid(),
+                ApplicationId = NewApplication.ApplicationId,
+                EmployeeNo = employeeNo,
+                FullName = HttpContext.Session.GetString("FullName") ?? "",
+                CreateDate = DateTime.Now,
+                CreateBy = employeeNo,
+                UpdateDate = DateTime.Now,
+                UpdateBy = employeeNo
+            };
+            _context.ApplicationAdmins.Add(admin);
 
             await _context.SaveChangesAsync();
-            _logger.LogInformation("Create saved successfully: {Id}", NewApplication.ApplicationId);
-
             return RedirectToPage();
         }
 
-        //เพิ่ม method สำหรับรีเซ็ต NewApplication
         private void ResetNewApplication()
         {
             NewApplication = new Application
@@ -152,12 +132,10 @@ namespace MyWebApp.Pages
 
         public async Task<IActionResult> OnPostEditAsync()
         {
-            _logger.LogInformation("OnPostEditAsync start: EditApplication.ApplicationId={Id}", EditApplication?.ApplicationId);
             Applications = _context.Applications.ToList();
 
             if (EditApplication == null || EditApplication.ApplicationId == Guid.Empty)
             {
-                _logger.LogWarning("EditApplication is null");
                 ViewData["ShowEditModal"] = true;
                 return Page();
             }
@@ -176,83 +154,47 @@ namespace MyWebApp.Pages
 
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Edit validation failed: {Errors}", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
                 ViewData["ShowEditModal"] = true;
                 return Page();
             }
 
-            try
+            var app = await _context.Applications.FindAsync(EditApplication.ApplicationId);
+            if (app == null)
             {
-                var app = await _context.Applications.FindAsync(EditApplication.ApplicationId);
-
-                if (app == null)
-                {
-                    _logger.LogError("Edit failed: Application not found Id={Id}", EditApplication.ApplicationId);
-                    return NotFound();
-                }
-
-                app.ApplicationId = EditApplication.ApplicationId;
-                app.ApplicationName = EditApplication.ApplicationName;
-                app.ApplicationStatus = EditApplication.ApplicationStatus;
-                app.Description = EditApplication.Description;
-                app.ContactName = EditApplication.ContactName;
-                app.Telephone = EditApplication.Telephone;
-
-                app.UpdateBy = "System";
-                app.UpdatedDate = DateTime.Now;
-
-                await _context.SaveChangesAsync();
-                _logger.LogInformation("Edit saved successfully Id={Id}", app.ApplicationId);
-                
-                // ⭐ รีเซ็ต NewApplication หลังจากแก้ไขสำเร็จ
-                ResetNewApplication();
-                
-                return RedirectToPage();
+                return NotFound();
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in OnPostEditAsync for Id={Id}", EditApplication.ApplicationId);
-                TempData["Error"] = "เกิดข้อผิดพลาดขณะบันทึกแก้ไข: " + ex.Message;
-                ViewData["ShowEditModal"] = true;
-                return Page();
-            }
+
+            app.ApplicationName = EditApplication.ApplicationName;
+            app.ApplicationStatus = EditApplication.ApplicationStatus;
+            app.Description = EditApplication.Description;
+            app.ContactName = EditApplication.ContactName;
+            app.Telephone = EditApplication.Telephone;
+
+            app.UpdateBy = HttpContext.Session.GetString("EmployeeNo") ?? "Unknown";
+            app.UpdatedDate = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            ResetNewApplication();
+            return RedirectToPage();
         }
 
         public async Task<IActionResult> OnPostDeleteAsync()
         {
-            _logger.LogInformation("OnPostDeleteAsync start: DeleteId={Id}", DeleteId);
             if (DeleteId == Guid.Empty)
             {
-                _logger.LogWarning("DeleteId invalid: {Id}", DeleteId);
                 return BadRequest();
             }
 
-            try
+            var app = await _context.Applications.FindAsync(DeleteId);
+            if (app == null)
             {
-                var app = await _context.Applications.FindAsync(DeleteId);
-
-                if (app == null)
-                {
-                    _logger.LogError("Delete failed: Application not found Id={Id}", DeleteId);
-                    return NotFound();
-                }
-
-                _context.Applications.Remove(app);
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Delete succeeded Id={Id}", DeleteId);
-                
-                // ⭐ รีเซ็ต NewApplication หลังจากลบสำเร็จ
-                ResetNewApplication();
-                
-                return RedirectToPage();
+                return NotFound();
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in OnPostDeleteAsync for Id={Id}", DeleteId);
-                TempData["Error"] = "เกิดข้อผิดพลาดขณะลบ: " + ex.Message;
-                return RedirectToPage();
-            }
+
+            _context.Applications.Remove(app);
+            await _context.SaveChangesAsync();
+            ResetNewApplication();
+            return RedirectToPage();
         }
     }
 }

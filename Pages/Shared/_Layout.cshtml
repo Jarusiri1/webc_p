@@ -79,19 +79,19 @@
         </div>
         <div>
             @{
-                var empNo = TempData["EmployeeNo"] as string;
-                TempData.Keep("EmployeeNo");
+                var empNo = Context.Session.GetString("EmployeeNo");
+                var fullName = Context.Session.GetString("FullName");
             }
             @if (!string.IsNullOrEmpty(empNo))
             {
-                <small>@empNo</small>
-                <span class="badge bg-secondary">ADMIN</span>
-                <a href="/Logout" class="btn btn-sm btn-outline-danger ms-2">ออกจากระบบ</a>
+                <span class="me-2 fw-bold">@fullName (@empNo)</span>
+                <a href="/Logout" class="btn btn-sm btn-outline-danger">ออกจากระบบ</a>
             }
             else
             {
-                <small>ไม่ระบุผู้ใช้</small>
+                <small class="text-danger">ไม่ระบุผู้ใช้</small>
             }
+
         </div>
     </div>
     
