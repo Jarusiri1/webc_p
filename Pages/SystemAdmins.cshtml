@@ -6,8 +6,12 @@
 
 @if (TempData["LoginMessage"] != null)
 {
-    <div class="alert alert-success">@TempData["LoginMessage"]</div>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["LoginMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 }
+
 
 <h2>ผู้ดูแลระบบ</h2>
 @if (TempData["Error"] != null)
@@ -165,7 +169,7 @@
           </div>
           
           <div class="mb-3">
-            <label asp-for="NewApplicationAdmin.FullName" class="form-label">ชื่อ-นามสกุล (ไม่บังคับ)</label>
+            <label asp-for="NewApplicationAdmin.FullName" class="form-label">ชื่อ - นามสกุล</label>
             <input asp-for="NewApplicationAdmin.FullName"
                    name="NewApplicationAdmin.FullName"
                    class="form-control @(ViewData.ModelState[nameof(Model.NewApplicationAdmin.FullName)]?.Errors.Count > 0 ? "is-invalid" : "")" 

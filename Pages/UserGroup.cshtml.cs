@@ -37,14 +37,24 @@ namespace MyWebApp.Pages
 
         public async Task OnGetAsync(Guid? groupId = null)
 {
-    await LoadDataAsync(groupId);
+    var employeeNo = HttpContext.Session.GetString("EmployeeNo");
+    if (string.IsNullOrEmpty(employeeNo))
+    {
+        Response.Redirect("/Login");
+        return;
+    }
+
+    await LoadDataAsync(employeeNo, groupId);
 }
 
-private async Task LoadDataAsync(Guid? groupId = null)
+
+private async Task LoadDataAsync(string employeeNo, Guid? groupId = null)
 {
     GroupSelectList = new SelectList(await _context.Groups.ToListAsync(), "GroupId", "GroupName");
 
-    var query = _context.UserGroups.Include(ug => ug.Group).AsQueryable();
+    var query = _context.UserGroups
+        .Include(ug => ug.Group)
+        .AsQueryable();
 
     if (groupId.HasValue)
     {
@@ -53,6 +63,7 @@ private async Task LoadDataAsync(Guid? groupId = null)
 
     UserGroups = await query.OrderBy(ug => ug.Group!.GroupName).ToListAsync();
 }
+
 
         private async Task LoadDataAsync()
         {
@@ -65,6 +76,11 @@ private async Task LoadDataAsync(Guid? groupId = null)
 
         public async Task<IActionResult> OnPostAddAsync()
         {
+            var employeeNo = HttpContext.Session.GetString("EmployeeNo");
+            if (string.IsNullOrEmpty(employeeNo))
+            {
+                return RedirectToPage("/Login");
+            }
             await LoadDataAsync();
 
             ModelState.Clear();
@@ -112,63 +128,78 @@ private async Task LoadDataAsync(Guid? groupId = null)
         }
 
         public async Task<IActionResult> OnPostEditAsync()
-        {
-            await LoadDataAsync();
+{
+    var employeeNo = HttpContext.Session.GetString("EmployeeNo");
+    if (string.IsNullOrEmpty(employeeNo))
+    {
+        return RedirectToPage("/Login");
+    }
 
-            if (EditGroup == null || EditGroup.UserGroupId == Guid.Empty)
-            {
-                ViewData["ShowEditModal"] = true;
-                return Page();
-            }
+    await LoadDataAsync(employeeNo);
 
-            ModelState.Clear();
-            await TryUpdateModelAsync(
-                EditGroup,
-                "EditGroup",
-                m => m.EmployeeNo,
-                m => m.GroupId,
-                 m => m.FullName
-            );
+    if (EditGroup == null || EditGroup.UserGroupId == Guid.Empty)
+    {
+        ViewData["ShowEditModal"] = true;
+        return Page();
+    }
 
-            if (string.IsNullOrWhiteSpace(EditGroup.EmployeeNo))
-            {
-                ModelState.AddModelError("EditGroup.EmployeeNo", "กรุณากรอกรหัสพนักงาน");
-            }
+    ModelState.Clear();
+    await TryUpdateModelAsync(
+        EditGroup,
+        "EditGroup",
+        m => m.EmployeeNo,
+        m => m.GroupId,
+        m => m.FullName
+    );
 
-            if (!ModelState.IsValid)
-            {
-                _logger.LogWarning("Edit validation failed.");
-                ViewData["ShowEditModal"] = true;
-                return Page();
-            }
+    if (string.IsNullOrWhiteSpace(EditGroup.EmployeeNo))
+    {
+        ModelState.AddModelError("EditGroup.EmployeeNo", "กรุณากรอกรหัสพนักงาน");
+    }
 
-            bool exists = await _context.UserGroups.AnyAsync(
-                ug => ug.UserGroupId != EditGroup.UserGroupId &&
-                      ug.EmployeeNo == EditGroup.EmployeeNo &&
-                      ug.GroupId == EditGroup.GroupId);
+    if (!ModelState.IsValid)
+    {
+        _logger.LogWarning("Edit validation failed.");
+        ViewData["ShowEditModal"] = true;
+        return Page();
+    }
 
-            if (exists)
-            {
-                ModelState.AddModelError("EditGroup.EmployeeNo", "ข้อมูลซ้ำกับรายการที่มีอยู่แล้ว");
-                ViewData["ShowEditModal"] = true;
-                return Page();
-            }
+    bool exists = await _context.UserGroups.AnyAsync(
+        ug => ug.UserGroupId != EditGroup.UserGroupId &&
+              ug.EmployeeNo == EditGroup.EmployeeNo &&
+              ug.GroupId == EditGroup.GroupId);
 
-            var entity = await _context.UserGroups.FindAsync(EditGroup.UserGroupId);
-            if (entity is null) return NotFound();
+    if (exists)
+    {
+        ModelState.AddModelError("EditGroup.EmployeeNo", "ข้อมูลซ้ำกับรายการที่มีอยู่แล้ว");
+        ViewData["ShowEditModal"] = true;
+        return Page();
+    }
 
-            entity.EmployeeNo = EditGroup.EmployeeNo.Trim();
-            entity.GroupId = EditGroup.GroupId;
-            entity.FullName = EditGroup.FullName;
+    var entity = await _context.UserGroups.FindAsync(EditGroup.UserGroupId);
+    if (entity is null) return NotFound();
 
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Edited UserGroup: {id}", entity.UserGroupId);
+    entity.EmployeeNo = EditGroup.EmployeeNo.Trim();
+    entity.GroupId = EditGroup.GroupId;
+    entity.FullName = EditGroup.FullName;
 
-            return RedirectToPage();
-        }
+    await _context.SaveChangesAsync();
+    _logger.LogInformation("Edited UserGroup: {id}", entity.UserGroupId);
+
+    return RedirectToPage();
+}
+
 
         public async Task<IActionResult> OnPostDeleteAsync(Guid userGroupId)
 {
+    var employeeNo = HttpContext.Session.GetString("EmployeeNo");
+    if (string.IsNullOrEmpty(employeeNo))
+    {
+        return RedirectToPage("/Login");
+    }
+
+    await LoadDataAsync(employeeNo);
+
     if (userGroupId == Guid.Empty)
     {
         _logger.LogWarning("DeleteId is empty");
@@ -185,6 +216,5 @@ private async Task LoadDataAsync(Guid? groupId = null)
 
     return RedirectToPage();
 }
-
     }
 }

@@ -33,45 +33,41 @@ namespace MyWebApp.Pages
         public Guid DeleteId { get; set; }
 
         public void OnGet()
-        {
-            if (TempData["EmployeeNo"] == null)
-            {
-                Response.Redirect("/Login");
-                return;
-            }
+{
+    // ✅ ตรวจสอบ Session ก่อน (เปลี่ยนจาก TempData เป็น Session)
+    var employeeNo = HttpContext.Session.GetString("EmployeeNo");
+    if (string.IsNullOrEmpty(employeeNo))
+    {
+        Response.Redirect("/Login");
+        return;
+    }
 
-            TempData.Keep("EmployeeNo");
+    // ✅ เก็บไว้ใช้งาน
+    NewApplicationAdmin = new ApplicationAdmin
+    {
+        ApplicationAdminId = Guid.Empty,
+        ApplicationId = Guid.Empty,
+        EmployeeNo = string.Empty,
+        FullName = string.Empty
+    };
 
-            // รีเซ็ต NewApplicationAdmin
-            NewApplicationAdmin = new ApplicationAdmin
-            {
-                ApplicationAdminId = Guid.Empty,
-                ApplicationId = Guid.Empty,
-                EmployeeNo = string.Empty,
-                FullName = string.Empty
-            };
+    ApplicationAdmins = _context.ApplicationAdmins.ToList();
 
-            // ดึงรายการผู้ดูแลระบบทั้งหมด
-            ApplicationAdmins = _context.ApplicationAdmins.ToList();
-            
-            // 🔥 ปรับปรุง: ดึงรายการแอปทั้งหมดเพื่อใช้ใน dropdown และ filter
-            // เรียงลำดับตามชื่อและแยกที่ใช้งานกับไม่ใช้งาน
-            var allApplications = _context.Applications
-                .OrderBy(a => a.ApplicationStatus == "ไม่ได้ใช้งาน") // ใช้งานขึ้นก่อน
-                .ThenBy(a => a.ApplicationName) // เรียงตามชื่อ
-                .ToList();
+    var allApplications = _context.Applications
+        .OrderBy(a => a.ApplicationStatus == "ไม่ได้ใช้งาน")
+        .ThenBy(a => a.ApplicationName)
+        .ToList();
 
-            ViewData["ApplicationList"] = allApplications;
-            
-            // 🔥 เพิ่ม: รายการแอปที่ใช้งานเท่านั้น สำหรับ dropdown เพิ่มข้อมูล
-            ViewData["ActiveApplicationList"] = allApplications
-                .Where(a => a.ApplicationStatus == "ใช้งาน")
-                .ToList();
+    ViewData["ApplicationList"] = allApplications;
 
-            // 🔥 เพิ่ม: สถิติข้อมูล
-            ViewData["TotalAdmins"] = ApplicationAdmins.Count;
-            ViewData["TotalApps"] = allApplications.Count(a => a.ApplicationStatus == "ใช้งาน");
-        }
+    ViewData["ActiveApplicationList"] = allApplications
+        .Where(a => a.ApplicationStatus == "ใช้งาน")
+        .ToList();
+
+    ViewData["TotalAdmins"] = ApplicationAdmins.Count;
+    ViewData["TotalApps"] = allApplications.Count(a => a.ApplicationStatus == "ใช้งาน");
+}
+
 
         public async Task<IActionResult> OnPostCreateAsync()
         {

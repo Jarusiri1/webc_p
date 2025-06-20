@@ -111,7 +111,7 @@ namespace MyWebApp.Pages
                 UpdateDate = DateTime.Now,
                 UpdateBy = employeeNo
             };
-            _context.ApplicationAdmins.Add(admin);
+            //_context.ApplicationAdmins.Add(admin);
 
             await _context.SaveChangesAsync();
             return RedirectToPage();
