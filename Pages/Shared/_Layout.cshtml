@@ -77,7 +77,7 @@
         <div class="d-flex align-items-center">
             <span class="app-title">PEA ACCESS CONTROL</span>
         </div>
-        <div>
+        @* <div>
             @{
                 var empNo = Context.Session.GetString("EmployeeNo");
                 var fullName = Context.Session.GetString("FullName");
@@ -92,7 +92,23 @@
                 <small class="text-danger">ไม่ระบุผู้ใช้</small>
             }
 
-        </div>
+        </div> *@
+        @* <div>
+            @{
+                var empNo = Context.Session.GetString("EmployeeNo");
+                var fullName = Context.Session.GetString("FullName");
+            }
+            @if (!string.IsNullOrEmpty(empNo))
+            {
+                <span class="me-2 fw-bold">@fullName (@empNo)</span>
+                <a href="/Logout" class="btn btn-sm btn-outline-danger">ออกจากระบบ</a>
+            }
+            else
+            {
+                <small class="text-danger">ไม่ระบุผู้ใช้</small>
+            }
+
+        </div> *@
     </div>
     
     <!-- Sidebar -->
@@ -104,7 +120,12 @@
         <a href="/UserGroup">จัดกลุ่มผู้ใช้งาน</a>
         <a href="/SystemAdmins">ผู้ดูแลระบบ</a>
     </div>
-    
+    @* test *@
+    @if (User.Identity?.IsAuthenticated == true)
+{
+    <a class="btn btn-danger" href="/Logout">Logout</a>
+}
+@* test *@
     <!-- Main Content -->
     <div class="main-content">
         @RenderBody()

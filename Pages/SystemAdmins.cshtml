@@ -248,6 +248,14 @@
 
 @section Scripts {
 <script>
+private string GetCurrentEmployeeNo()
+{
+    return User.FindFirst("preferred_username")?.Value
+        ?? User.FindFirst("employee_no")?.Value
+        ?? User.Identity?.Name
+        ?? "unknown";
+}
+
   // สร้างฟังก์ชัน delete ให้เป็น global
   function fillDeleteModal(id, adminName) {
     console.log("fillDeleteModal called with", id, adminName);

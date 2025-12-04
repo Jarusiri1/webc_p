@@ -1,0 +1,20 @@
+{
+  "name": "webc_p",
+  "version": "1.0.0",
+  "description": "ระบบพัฒนาโดย ASP.NET Core Razor Pages + SQL Server สำหรับควบคุมสิทธิ์การเข้าถึงแอปพลิเคชันภายในองค์กร โดยมีระบบกลุ่มผู้ใช้และสิทธิ์การใช้งานแบบละเอียด",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.12.2",
+    "keycloak-js": "^26.2.1",
+    "vue": "^3.5.22"
+  },
+  "devDependencies": {
+    "vite": "^7.1.9"
+  }
+}
