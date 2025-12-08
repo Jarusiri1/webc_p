@@ -16,75 +16,75 @@ build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.EnforceExtendedAnalyzerRules = 
 build_property.RootNamespace = MyWebApp
 build_property.RootNamespace = MyWebApp
-build_property.ProjectDir = D:\testVerifyIdentitySystem\webc_p\
+build_property.ProjectDir = d:\testVerifyIdentitySystem\webc_p\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = D:\testVerifyIdentitySystem\webc_p
+build_property.MSBuildProjectDirectory = d:\testVerifyIdentitySystem\webc_p
 build_property._RazorSourceGeneratorDebug = 
 
-[D:/testVerifyIdentitySystem/webc_p/Pages/App.cshtml]
+[d:/testVerifyIdentitySystem/webc_p/Pages/App.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/testVerifyIdentitySystem/webc_p/Pages/App.TablePartial.cshtml]
+[d:/testVerifyIdentitySystem/webc_p/Pages/App.TablePartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwLlRhYmxlUGFydGlhbC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/testVerifyIdentitySystem/webc_p/Pages/Callback.cshtml]
+[d:/testVerifyIdentitySystem/webc_p/Pages/Callback.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2FsbGJhY2suY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/testVerifyIdentitySystem/webc_p/Pages/Error.cshtml]
+[d:/testVerifyIdentitySystem/webc_p/Pages/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRXJyb3IuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/testVerifyIdentitySystem/webc_p/Pages/Group.cshtml]
+[d:/testVerifyIdentitySystem/webc_p/Pages/Group.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcR3JvdXAuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/testVerifyIdentitySystem/webc_p/Pages/Index.cshtml]
+[d:/testVerifyIdentitySystem/webc_p/Pages/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/testVerifyIdentitySystem/webc_p/Pages/Logout.cshtml]
+[d:/testVerifyIdentitySystem/webc_p/Pages/Logout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9nb3V0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/testVerifyIdentitySystem/webc_p/Pages/Permissions.cshtml]
+[d:/testVerifyIdentitySystem/webc_p/Pages/Permissions.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGVybWlzc2lvbnMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/testVerifyIdentitySystem/webc_p/Pages/Privacy.cshtml]
+[d:/testVerifyIdentitySystem/webc_p/Pages/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJpdmFjeS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/testVerifyIdentitySystem/webc_p/Pages/Shared/_ApplicationTable.cshtml]
+[d:/testVerifyIdentitySystem/webc_p/Pages/Shared/_ApplicationTable.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9BcHBsaWNhdGlvblRhYmxlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/testVerifyIdentitySystem/webc_p/Pages/Shared/_ValidationScriptsPartial.cshtml]
+[d:/testVerifyIdentitySystem/webc_p/Pages/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/testVerifyIdentitySystem/webc_p/Pages/SystemAdmins.cshtml]
+[d:/testVerifyIdentitySystem/webc_p/Pages/SystemAdmins.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3lzdGVtQWRtaW5zLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/testVerifyIdentitySystem/webc_p/Pages/UserGroup.cshtml]
+[d:/testVerifyIdentitySystem/webc_p/Pages/UserGroup.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVXNlckdyb3VwLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/testVerifyIdentitySystem/webc_p/Pages/_ViewImports.cshtml]
+[d:/testVerifyIdentitySystem/webc_p/Pages/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/testVerifyIdentitySystem/webc_p/Pages/_ViewStart.cshtml]
+[d:/testVerifyIdentitySystem/webc_p/Pages/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/testVerifyIdentitySystem/webc_p/Pages/Shared/_Layout.cshtml]
+[d:/testVerifyIdentitySystem/webc_p/Pages/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-529uds4zl5
