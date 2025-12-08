@@ -1,0 +1,34 @@
+@page
+@model MyWebApp.Pages.CallbackModel
+
+<script setup>
+import { onMounted } from 'vue';
+@* import useSystemUser from 'src/composable/useSystemUser'; *@
+@* onMounted(async () => {
+  await identifyUserHttpRequest();
+});
+
+const { identifyUserHttpRequest } = useSystemUser(); *@
+</script>
+
+<template>
+  <q-page class="flex flex-center">
+    <div class="row q-col-gutter-md justify-center">
+      <div clas="col-12">
+        <q-circular-progress
+          indeterminate
+          size="100px"
+          :thickness="0.22"
+          color="primary"
+          track-color="grey-3"
+          class="q-ma-md"
+        />
+      </div>
+      <div class="col-12 text-center">
+        <div class="text-h6">กำลังตรวจสอบข้อมูลผู้ใช้งานกรุณารอสักครู่</div>
+      </div>
+    </div>
+  </q-page>
+</template>
+
+<style lang="scss" scoped></style>
