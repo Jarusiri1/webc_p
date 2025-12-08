@@ -7,7 +7,7 @@
 ###หน้า Login (`Login.cshtml + .cs`)
 - เชื่อม `tblEmployee` เพื่อตรวจสอบ `EmployeeNo`
 - ถ้า login สำเร็จ → บันทึก Session: `EmployeeNo`, `FullName`
-- หลัง Login → redirect ไป `/UserGroups`
+- หลัง Login → redirect ไป `/App`
 ```csharp
 var emp = await _context.Employees.FirstOrDefaultAsync(e => e.EmployeeNo == EmployeeNo);
 HttpContext.Session.SetString("EmployeeNo", emp.EmployeeNo);
