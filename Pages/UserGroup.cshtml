@@ -26,7 +26,7 @@
         <div class="input-group input-group-sm" style="max-width: 200px;">
             <select id="filterByGroup" class="form-select">
                 <option value="">ทุกกลุ่ม</option>
-                @foreach (var g in Model.GroupSelectList)
+                @foreach (SelectListItem g in Model.GroupSelectList)
                 {
                     <option value="@g.Value">@g.Text</option>
                 }
