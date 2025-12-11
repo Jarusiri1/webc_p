@@ -1,86 +1,79 @@
 is_global = true
 build_property.TargetFramework = net8.0
-build_property.TargetFramework = net8.0
-build_property.TargetPlatformMinVersion = 
 build_property.TargetPlatformMinVersion = 
 build_property.UsingMicrosoftNETSdkWeb = true
-build_property.UsingMicrosoftNETSdkWeb = true
-build_property.ProjectTypeGuids = 
 build_property.ProjectTypeGuids = 
 build_property.InvariantGlobalization = 
-build_property.InvariantGlobalization = 
 build_property.PlatformNeutralAssembly = 
-build_property.PlatformNeutralAssembly = 
-build_property._SupportedPlatformList = Linux,macOS,Windows
-build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = MyWebApp
 build_property.RootNamespace = MyWebApp
-build_property.ProjectDir = /Users/jarusirikobkaew/Desktop/webmeen/https-github.com-dream1-webc_p/
+build_property.ProjectDir = d:\testVerifyIdentitySystem\webc_p\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = /Users/jarusirikobkaew/Desktop/webmeen/https-github.com-dream1-webc_p
+build_property.MSBuildProjectDirectory = d:\testVerifyIdentitySystem\webc_p
 build_property._RazorSourceGeneratorDebug = 
 
-[/Users/jarusirikobkaew/Desktop/webmeen/https-github.com-dream1-webc_p/Pages/App.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQXBwLmNzaHRtbA==
+[d:/testVerifyIdentitySystem/webc_p/Pages/App.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/jarusirikobkaew/Desktop/webmeen/https-github.com-dream1-webc_p/Pages/App.TablePartial.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQXBwLlRhYmxlUGFydGlhbC5jc2h0bWw=
+[d:/testVerifyIdentitySystem/webc_p/Pages/App.TablePartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwLlRhYmxlUGFydGlhbC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/jarusirikobkaew/Desktop/webmeen/https-github.com-dream1-webc_p/Pages/Error.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvRXJyb3IuY3NodG1s
+[d:/testVerifyIdentitySystem/webc_p/Pages/Error.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRXJyb3IuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/jarusirikobkaew/Desktop/webmeen/https-github.com-dream1-webc_p/Pages/Group.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvR3JvdXAuY3NodG1s
+[d:/testVerifyIdentitySystem/webc_p/Pages/Group.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcR3JvdXAuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/jarusirikobkaew/Desktop/webmeen/https-github.com-dream1-webc_p/Pages/Login.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvTG9naW4uY3NodG1s
+[d:/testVerifyIdentitySystem/webc_p/Pages/Login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9naW4uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/jarusirikobkaew/Desktop/webmeen/https-github.com-dream1-webc_p/Pages/Logout.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvTG9nb3V0LmNzaHRtbA==
+[d:/testVerifyIdentitySystem/webc_p/Pages/Logout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9nb3V0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/jarusirikobkaew/Desktop/webmeen/https-github.com-dream1-webc_p/Pages/Permissions.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvUGVybWlzc2lvbnMuY3NodG1s
+[d:/testVerifyIdentitySystem/webc_p/Pages/Permissions.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGVybWlzc2lvbnMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/jarusirikobkaew/Desktop/webmeen/https-github.com-dream1-webc_p/Pages/Privacy.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvUHJpdmFjeS5jc2h0bWw=
+[d:/testVerifyIdentitySystem/webc_p/Pages/Privacy.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJpdmFjeS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/jarusirikobkaew/Desktop/webmeen/https-github.com-dream1-webc_p/Pages/Shared/_ApplicationTable.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvU2hhcmVkL19BcHBsaWNhdGlvblRhYmxlLmNzaHRtbA==
+[d:/testVerifyIdentitySystem/webc_p/Pages/Shared/_ApplicationTable.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9BcHBsaWNhdGlvblRhYmxlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/jarusirikobkaew/Desktop/webmeen/https-github.com-dream1-webc_p/Pages/Shared/_ValidationScriptsPartial.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvU2hhcmVkL19WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+[d:/testVerifyIdentitySystem/webc_p/Pages/Shared/_ValidationScriptsPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/jarusirikobkaew/Desktop/webmeen/https-github.com-dream1-webc_p/Pages/SystemAdmins.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvU3lzdGVtQWRtaW5zLmNzaHRtbA==
+[d:/testVerifyIdentitySystem/webc_p/Pages/SystemAdmins.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3lzdGVtQWRtaW5zLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/jarusirikobkaew/Desktop/webmeen/https-github.com-dream1-webc_p/Pages/UserGroup.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvVXNlckdyb3VwLmNzaHRtbA==
+[d:/testVerifyIdentitySystem/webc_p/Pages/UserGroup.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVXNlckdyb3VwLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/jarusirikobkaew/Desktop/webmeen/https-github.com-dream1-webc_p/Pages/_ViewImports.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+[d:/testVerifyIdentitySystem/webc_p/Pages/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/jarusirikobkaew/Desktop/webmeen/https-github.com-dream1-webc_p/Pages/_ViewStart.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvX1ZpZXdTdGFydC5jc2h0bWw=
+[d:/testVerifyIdentitySystem/webc_p/Pages/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/jarusirikobkaew/Desktop/webmeen/https-github.com-dream1-webc_p/Pages/Shared/_Layout.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvU2hhcmVkL19MYXlvdXQuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = b-tdy2x9681t
+[d:/testVerifyIdentitySystem/webc_p/Pages/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = b-529uds4zl5
