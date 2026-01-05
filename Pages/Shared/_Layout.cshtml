@@ -118,13 +118,23 @@
         <a href="/Permissions">สิทธิการใช้งาน</a>
         <a href="/Group">กลุ่มผู้ใช้งาน</a>
         <a href="/UserGroup">จัดกลุ่มผู้ใช้งาน</a>
-        <a href="/SystemAdmins">ผู้ดูแลระบบ</a>
+        <a href="/SystemAdmins">ผู้ดูแลระบบ</a><br>
+
+        @* <a asp-page="/App">แอปพลิเคชัน</a>
+        <a asp-page="/Permissions">สิทธิการใช้งาน</a>
+        <a asp-page="/Group">กลุ่มผู้ใช้งาน</a>
+        <a asp-page="/UserGroup">จัดกลุ่มผู้ใช้งาน</a>
+        <a asp-page="/SystemAdmins">ผู้ดูแลระบบ</a><br> *@
+        <a href="/logout" class="btn btn-danger btn-sm" style="color:white;">Logout</a>
     </div>
+
+
+    @* <a href="/logout" class="btn btn-danger">Logout</a> *@
     @* test *@
-    @if (User.Identity?.IsAuthenticated == true)
+    @* @if (User.Identity?.IsAuthenticated == true)
 {
     <a class="btn btn-danger" href="/Logout">Logout</a>
-}
+} *@
 @* test *@
     <!-- Main Content -->
     <div class="main-content">

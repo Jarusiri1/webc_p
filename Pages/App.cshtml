@@ -62,8 +62,9 @@
   </thead>
 
   <tbody>
+    @* <partial name="_Layout" /> *@
   @{ int index = 1; }
-  @foreach (var app in Model.Applications)
+  @foreach (Models.Application app in Model.Applications)
   {
       <tr>
           <td>@index</td>
@@ -106,4 +107,6 @@
       index++;
   }
   </tbody>
+
+
 </table>
