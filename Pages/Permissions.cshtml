@@ -34,7 +34,7 @@
                 <option value="">ทุกแอปพลิเคชัน</option>
                 @if (ViewData["ApplicationList"] is List<MyWebApp.Models.Application> applicationList)
                 {
-                    @foreach (var app in applicationList)
+                    @foreach (Models.Application app in applicationList)
                     {
                         <option value="@app.ApplicationId">@app.ApplicationName</option>
                     }

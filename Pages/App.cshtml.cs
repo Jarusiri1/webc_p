@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using MyWebApp.Data;
 using MyWebApp.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MyWebApp.Pages
 {
+    [Authorize]
     public class AppModel : PageModel
     {
         private readonly AppDbContext _context;
@@ -32,29 +34,40 @@ namespace MyWebApp.Pages
         [BindProperty]
         public Guid DeleteId { get; set; }
 
+        // public void OnGet()
+        // {
+        //     var employeeNo = HttpContext.Session.GetString("EmployeeNo");
+        //     if (string.IsNullOrEmpty(employeeNo))
+        //     {
+        //         Response.Redirect("/Login");
+        //         return;
+        //     }
+
+        //     Applications = _context.Applications
+        //         .Where(a => a.CreateBy == employeeNo)
+        //         .ToList();
+
+        //     NewApplication = new Application
+        //     {
+        //         ApplicationId = Guid.Empty,
+        //         ApplicationName = string.Empty,
+        //         ApplicationStatus = string.Empty,
+        //         Description = string.Empty,
+        //         ContactName = string.Empty,
+        //         Telephone = string.Empty
+        //     };
+        // }
+
         public void OnGet()
+    {
+        var employeeNo = HttpContext.Session.GetString("EmployeeNo");
+
+        if (string.IsNullOrEmpty(employeeNo))
         {
-            var employeeNo = HttpContext.Session.GetString("EmployeeNo");
-            if (string.IsNullOrEmpty(employeeNo))
-            {
-                Response.Redirect("/Login");
-                return;
-            }
-
-            Applications = _context.Applications
-                .Where(a => a.CreateBy == employeeNo)
-                .ToList();
-
-            NewApplication = new Application
-            {
-                ApplicationId = Guid.Empty,
-                ApplicationName = string.Empty,
-                ApplicationStatus = string.Empty,
-                Description = string.Empty,
-                ContactName = string.Empty,
-                Telephone = string.Empty
-            };
+            // ตัวอย่าง set session ครั้งแรก
+            HttpContext.Session.SetString("EmployeeNo", User.Identity?.Name ?? "");
         }
+    }
 
         public async Task<IActionResult> OnPostCreateAsync()
         {
